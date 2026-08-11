@@ -1,0 +1,12 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light Blue Circle Background -->
+  <circle cx="100" cy="100" r="90" fill="#CCEBF1" />
+  
+  <!-- Profile Icon (Head & Shoulders) -->
+  <g fill="none" stroke="#3D4046" stroke-width="16" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Head -->
+    <circle cx="100" cy="72" r="22" />
+    <!-- Shoulders Arc -->
+    <path d="M 52,142 C 52,112 148,112 148,142" />
+  </g>
+</svg>

@@ -1,0 +1,10 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light Blue Circle Background -->
+  <circle cx="100" cy="100" r="90" fill="#CCEBF1" />
+  
+  <!-- Dark Speech Bubble Body -->
+  <path d="M 100,42 C 60,42 32,66 32,98 C 32,118 45,135 65,145 C 60,158 50,165 42,168 C 58,168 76,160 88,152 C 92,153 96,154 100,154 C 140,154 168,130 168,98 C 168,66 140,42 100,42 Z" fill="#3D4046" />
+  
+  <!-- Question Mark Text -->
+  <text x="100" y="118" font-family="Arial, sans-serif" font-weight="bold" font-size="62" fill="#EAEAEA" text-anchor="middle">?</text>
+</svg>

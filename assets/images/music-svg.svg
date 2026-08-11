@@ -1,0 +1,15 @@
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Light Blue Circle Background -->
+  <circle cx="100" cy="100" r="90" fill="#CCEBF1" />
+  
+  <!-- Music Notes -->
+  <g fill="none" stroke="#3D4046" stroke-width="14" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Left Note Circle -->
+    <circle cx="70" cy="130" r="14" fill="#3D4046" />
+    <!-- Right Note Circle -->
+    <circle cx="130" cy="115" r="14" fill="#3D4046" />
+    <!-- Stems and Top Beam -->
+    <path d="M 84,130 L 84,65 L 144,50 L 144,115" />
+    <path d="M 84,80 L 144,65" />
+  </g>
+</svg>
