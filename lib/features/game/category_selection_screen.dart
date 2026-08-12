@@ -22,7 +22,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
   final PageController _pageController = PageController(
     initialPage: 2,
-    viewportFraction: 0.22,
+    viewportFraction: 0.15,
   );
   double _currentPage = 2.0;
 
@@ -55,20 +55,61 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
               _buildTopBar(context),
               const SizedBox(height: 10),
               Expanded(
-                child: PageView.builder(
-                  controller: _pageController,
-                  itemCount: categories.length,
-                  clipBehavior: Clip.none,
-                  itemBuilder: (context, index) {
-                    double diff = (index - _currentPage);
-                    double value = (1 - (diff.abs() * 0.4)).clamp(0.0, 1.0);
-                    double scale = 0.8 + (value * 0.2);
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    final double width = constraints.maxWidth;
+                    final double itemWidth = width * 0.22;
 
-                    return Center(
-                      child: Transform.scale(
-                        scale: scale,
-                        child: _buildCategoryCard(categories[index], value > 0.8),
-                      ),
+                    List<int> indices = List.generate(categories.length, (i) => i);
+                    indices.sort((a, b) => (b - _currentPage).abs().compareTo((a - _currentPage).abs()));
+
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        ...indices.map((index) {
+                          double diff = (index - _currentPage);
+                          double xOffset = diff * (width * 0.15);
+
+                          double value = (1 - (diff.abs() * 0.4)).clamp(0.0, 1.0);
+                          double scale = 0.8 + (value * 0.2);
+
+                          return Transform.translate(
+                            offset: Offset(xOffset, 0),
+                            child: Transform.scale(
+                              scale: scale,
+                              child: SizedBox(
+                                width: itemWidth,
+                                height: 280,
+                                child: _buildCategoryCard(categories[index], value > 0.8),
+                              ),
+                            ),
+                          );
+                        }),
+                        Positioned.fill(
+                          child: PageView.builder(
+                            controller: _pageController,
+                            itemCount: categories.length,
+                            padEnds: true,
+                            itemBuilder: (context, index) {
+                              return GestureDetector(
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  if ((index - _currentPage).abs() < 0.5) {
+                                    // Handle category selection
+                                  } else {
+                                    _pageController.animateToPage(
+                                      index,
+                                      duration: const Duration(milliseconds: 300),
+                                      curve: Curves.easeInOut,
+                                    );
+                                  }
+                                },
+                                child: Container(color: Colors.transparent),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     );
                   },
                 ),
@@ -81,8 +122,9 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             bottom: 10,
             right: 20,
             child: Image.asset(
-              'assets/images/magic_image.png',
-              height: 120,
+              'assets/images/litto.png',
+              height: 220,
+              fit: BoxFit.contain,
             ),
           ),
         ],
@@ -118,9 +160,9 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                       ),
                     ),
                     Image.asset(
-                      'assets/images/magic_image.png',
-                      height: 45,
-                      width: 45,
+                      'assets/images/litto.png',
+                      height: 65,
+                      width: 65,
                     ),
                   ],
                 ),
@@ -130,7 +172,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
           
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.only(top:10),
+              padding: const EdgeInsets.only(top: 10),
               child: Text(
                 'What kind of question should we learn about today?',
                 textAlign: TextAlign.center,

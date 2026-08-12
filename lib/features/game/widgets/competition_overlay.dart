@@ -5,18 +5,21 @@ class CompetitionOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Center(
+    return Material(
+      color : Colors.transparent,
+      child: Center(
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.8,
-          height: MediaQuery.of(context).size.height * 0.7,
+          width: MediaQuery.of(context).size.width * 0.9,
+          height: MediaQuery.of(context).size.height * 0.8,
           decoration: BoxDecoration(
-            color: Colors.blue.shade200.withOpacity(0.95),
-            borderRadius: BorderRadius.circular(30),
+            color: const Color(0xFF81D4FA).withOpacity(0.5), // Light blue background
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(color: Colors.white.withOpacity(0.5), width: 2),
           ),
           child: Stack(
+            clipBehavior: Clip.none,
             children: [
+              // Title
               Positioned(
                 top: 20,
                 left: 0,
@@ -25,75 +28,104 @@ class CompetitionOverlay extends StatelessWidget {
                   'Here is your weekly competition',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.comicNeue(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
                   ),
                 ),
               ),
+
+              // White Content Box
               Center(
                 child: Container(
-                  width: MediaQuery.of(context).size.width * 0.6,
-                  height: MediaQuery.of(context).size.height * 0.35,
-                  padding: const EdgeInsets.all(20),
+                  width: MediaQuery.of(context).size.width * 0.8,
+                  height: MediaQuery.of(context).size.height * 0.4,
+                  padding: const EdgeInsets.symmetric(horizontal: 40),
                   decoration: BoxDecoration(
                     color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(30),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     'Design a cool backpack showcasing your favorite animals',
                     textAlign: TextAlign.center,
                     style: GoogleFonts.comicNeue(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF333333),
                     ),
                   ),
                 ),
               ),
+
+              // Chameleon Character
               Positioned(
-                left: 40,
-                bottom: 40,
-                child: _buildSmallButton('JUST\nEXPLORE', Icons.home),
+                top: -30,
+                right: -20,
+                child: Image.asset(
+                  'assets/images/chameleon.png',
+                  height: 140,
+                  fit: BoxFit.contain,
+                ),
               ),
+
+              // Star Icon on left
               Positioned(
-                right: 40,
-                bottom: 40,
-                child: _buildSmallButton('SKIP TO\nNEXT', Icons.skip_next),
-              ),
-              Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Container(
-                      margin: const EdgeInsets.only(bottom: 20),
-                      padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: Colors.yellow,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Column(
-                        children: [
-                          const Icon(Icons.play_arrow, size: 40),
-                          Text(
-                            'START',
-                            style: GoogleFonts.comicNeue(fontWeight: FontWeight.bold, fontSize: 18),
-                          ),
-                        ],
-                      ),
-                    ),
+                left: -20,
+                top: MediaQuery.of(context).size.height * 0.4,
+                child: const Icon(
+                  Icons.star_rounded,
+                  size: 80,
+                  color: Color(0xFFFFD54F),
+                  shadows: [
+                    Shadow(color: Colors.black26, blurRadius: 10, offset: Offset(2, 2))
                   ],
                 ),
               ),
+
+              // Bottom Buttons Row
               Positioned(
-                top: 100,
-                right: 20,
-                child: Icon(Icons.emoji_emotions, size: 80, color: Colors.purple.shade300), // Placeholder for character
-              ),
-              Positioned(
-                bottom: 120,
-                left: 20,
-                child: const Icon(Icons.star, size: 60, color: Colors.blue),
+                bottom: 20,
+                left: 40,
+                right: 40,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    _buildIconButton('JUS\nEXPLORE', Icons.home_filled, const Color(0xFF81C784)),
+                    
+                    // START Button
+                    GestureDetector(
+                      onTap: () => Navigator.pop(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD54F), // Yellow
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(color: Colors.black12, blurRadius: 8, offset: const Offset(0, 4))
+                          ],
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.play_arrow_rounded, size: 40, color: Colors.black),
+                            Text(
+                              'START',
+                              style: GoogleFonts.comicNeue(
+                                fontWeight: FontWeight.w900,
+                                fontSize: 20,
+                                color: Colors.black,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    _buildIconButton('SKIP TO\nNEXT', Icons.skip_next_rounded, const Color(0xFF81C784)),
+                  ],
+                ),
               ),
             ],
           ),
@@ -102,11 +134,12 @@ class CompetitionOverlay extends StatelessWidget {
     );
   }
 
-  Widget _buildSmallButton(String text, IconData icon) {
+  Widget _buildIconButton(String text, IconData icon, Color color) {
     return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          padding: const EdgeInsets.all(4),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(8),
@@ -114,14 +147,22 @@ class CompetitionOverlay extends StatelessWidget {
           child: Text(
             text,
             textAlign: TextAlign.center,
-            style: GoogleFonts.comicNeue(fontSize: 10, fontWeight: FontWeight.bold),
+            style: GoogleFonts.comicNeue(
+              fontSize: 10,
+              fontWeight: FontWeight.w900,
+              color: Colors.black,
+            ),
           ),
         ),
-        const SizedBox(height: 5),
+        const SizedBox(height: 8),
         Container(
-          padding: const EdgeInsets.all(8),
-          decoration: const BoxDecoration(color: Colors.green, shape: BoxShape.circle),
-          child: Icon(icon, color: Colors.white, size: 20),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white, width: 2),
+          ),
+          child: Icon(icon, color: Colors.white, size: 28),
         ),
       ],
     );

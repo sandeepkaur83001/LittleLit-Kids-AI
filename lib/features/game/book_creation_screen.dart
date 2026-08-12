@@ -7,72 +7,84 @@ class BookCreationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GameBackground(
+      backgroundImage: 'assets/images/hills_background_clean.png',
       child: Center(
         child: Container(
           width: MediaQuery.of(context).size.width * 0.9,
           height: MediaQuery.of(context).size.height * 0.85,
           decoration: BoxDecoration(
-            color: Colors.green.shade200.withOpacity(0.9),
+            color: const Color(0xFF80CBC4).withOpacity(0.6), // Light teal overlay
             borderRadius: BorderRadius.circular(30),
           ),
           child: Stack(
             children: [
-              Positioned(
-                top: 15,
-                right: 15,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.black54),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                ),
-              ),
+              // Character in top left
               Positioned(
                 top: 20,
-                left: 50,
-                child: Column(
-                  children: [
-                    const Icon(Icons.menu_book, size: 60, color: Colors.green),
-                    const SizedBox(height: 5),
-                    const Icon(Icons.sentiment_very_satisfied, color: Colors.green),
-                  ],
+                left: 30,
+                child: Image.asset(
+                  'assets/images/book.png',
+                  height: 120,
+                  fit: BoxFit.contain,
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(120, 20, 60, 10),
-                child: SingleChildScrollView(
-                  child: Column(
-                    children: [
-                      Text(
-                        'First, lets build an idea for your book. What kind of story world do you want to create?',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+
+              // Close Button
+              Positioned(
+                top: 20,
+                right: 20,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFC5E1A5), // Pale green
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
+                      ],
+                    ),
+                    child: const Icon(Icons.close, color: Colors.black54, size: 28),
+                  ),
+                ),
+              ),
+
+              Padding(
+                padding: const EdgeInsets.fromLTRB(160, 40, 60, 20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'First, lets build an idea for your book. What kind of story world do you want to create?',
+                      textAlign: TextAlign.left,
+                      style: GoogleFonts.comicNeue(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
                       ),
-                      const SizedBox(height: 20),
-                      SizedBox(
-                        height: 220,
-                        child: ListView(
-                          scrollDirection: Axis.horizontal,
+                    ),
+                    const SizedBox(height: 20),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
                           children: [
-                            _buildThemeCard('Fantasy', 'https://picsum.photos/150/200?random=11'),
+                            _buildBookCard('Theme', 'https://picsum.photos/400/400?random=21'),
                             const SizedBox(width: 15),
-                            _buildThemeCard('Mystery', 'https://picsum.photos/150/200?random=12'),
+                            _buildBookCard('Fantasy', 'https://picsum.photos/400/400?random=22'),
                             const SizedBox(width: 15),
-                            _buildThemeCard('Diary', 'https://picsum.photos/150/200?random=13'),
+                            _buildBookCard('Mystery', 'https://picsum.photos/400/400?random=23'),
                             const SizedBox(width: 15),
-                            _buildThemeCard('Theme', 'https://picsum.photos/150/200?random=14'),
+                            _buildBookCard('Diary', 'https://picsum.photos/400/400?random=24'),
                           ],
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -82,40 +94,64 @@ class BookCreationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeCard(String title, String imageUrl) {
+  Widget _buildBookCard(String title, String imageUrl) {
     return Container(
       width: 140,
+      margin: const EdgeInsets.symmetric(vertical: 10),
       decoration: BoxDecoration(
-        color: const Color(0xFF2C7A9F),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 5,
-            offset: const Offset(3, 3),
+            color: Colors.black.withOpacity(0.15),
+            blurRadius: 10,
+            offset: const Offset(0, 5),
           ),
         ],
       ),
       child: Column(
         children: [
           Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Color(0xFF006064), // Dark teal book spine/cover
+                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
+              ),
+              padding: const EdgeInsets.all(6),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
-                child: Image.network(imageUrl, fit: BoxFit.cover),
+                child: Image.network(
+                  imageUrl,
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            decoration: const BoxDecoration(
+              color: Color(0xFF006064),
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
+            ),
             child: Text(
               title,
+              textAlign: TextAlign.center,
               style: GoogleFonts.comicNeue(
                 color: Colors.white,
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
+            ),
+          ),
+          // White "pages" effect at the bottom
+          Container(
+            height: 10,
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
             ),
           ),
         ],

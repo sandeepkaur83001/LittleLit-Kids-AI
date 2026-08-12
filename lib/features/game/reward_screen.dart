@@ -14,9 +14,12 @@ class _RewardScreenState extends State<RewardScreen> {
   @override
   Widget build(BuildContext context) {
     return GameBackground(
+      backgroundImage: "assets/images/landscape_background_clean.png",
       child: Column(
         children: [
           _buildTopBar(context),
+          const SizedBox(height: 20),
+          
           Expanded(
             child: _buildMainContent(),
           ),
@@ -28,6 +31,9 @@ class _RewardScreenState extends State<RewardScreen> {
 
   Widget _buildTopBar(BuildContext context) {
     return Container(
+      decoration: BoxDecoration(
+        color: Colors.lightBlueAccent.withOpacity(0.7)
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       child: Row(
         children: [
@@ -40,7 +46,7 @@ class _RewardScreenState extends State<RewardScreen> {
           GestureDetector(
             onTap: () => Navigator.pop(context),
             child: Container(
-              padding: const EdgeInsets.all(8),
+              padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
                 color: Colors.black.withOpacity(0.1),
                 shape: BoxShape.circle,
@@ -58,29 +64,22 @@ class _RewardScreenState extends State<RewardScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedTab = index),
       child: Container(
-        width: 80,
-        height: 80,
+        width: 100,
+        height: 100,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.1),
-              blurRadius: 5,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: isSelected ? Border.all(color: Colors.black, width: 5) : null,
         ),
         alignment: Alignment.center,
         child: Text(
           label,
           textAlign: TextAlign.center,
           style: GoogleFonts.comicNeue(
-            fontSize: 14,
+            fontSize: 16,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
-            height: 1.1,
+            color: Colors.black,
+            height: 1.0,
           ),
         ),
       ),
@@ -95,22 +94,30 @@ class _RewardScreenState extends State<RewardScreen> {
         color: Colors.white.withOpacity(0.9),
         borderRadius: BorderRadius.circular(20),
         image: const DecorationImage(
-          image: NetworkImage('https://img.freepik.com/free-vector/hand-drawn-notebook-paper-background_23-2149488346.jpg'), // Placeholder for notebook pattern
+          image: AssetImage('assets/images/create_something_background.png'),
           fit: BoxFit.cover,
-          opacity: 0.2,
         ),
       ),
       child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 60),
-          child: Text(
-            'As soon as you create something it will show up here!',
-            textAlign: TextAlign.center,
-            style: GoogleFonts.comicNeue(
-              fontSize: 22,
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic,
-              color: const Color(0xFF444444),
+        child: Container(
+
+          width: MediaQuery.of(context).size.width*0.75,
+          height: MediaQuery.of(context).size.height*0.7,
+          margin: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color:  Colors.white, // Soft teal/cyan
+            borderRadius: BorderRadius.circular(15),
+          ),
+          child: Center(
+            child: Text(
+              'As soon as you create something it will show up here!',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.comicNeue(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
             ),
           ),
         ),

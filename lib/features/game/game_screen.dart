@@ -17,7 +17,8 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
+  late AnimationController _musicIconController;
   final List<Map<String, dynamic>> games = [
     {'title': 'Make Posters', 'image': 'assets/images/make_posters.png'},
     {'title': 'Design Stuff', 'image': 'assets/images/design_stuff.png'},
@@ -34,13 +35,17 @@ class _GameScreenState extends State<GameScreen> {
 
   final PageController _pageController = PageController(
     initialPage: 1,
-    viewportFraction: 0.21, // Reduced gap between cards
+    viewportFraction: 0.1, // Slot size for each item (15% of width)
   );
   double _currentPage = 1.0;
 
   @override
   void initState() {
     super.initState();
+    _musicIconController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    )..repeat(reverse: true);
     // _loadGameData(); // API Call: Fetching available games from server
     _pageController.addListener(() {
       if (_pageController.hasClients) {
@@ -49,10 +54,20 @@ class _GameScreenState extends State<GameScreen> {
         });
       }
     });
+
+    // Show competition overlay on redirect
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const CompetitionOverlay(),
+      );
+    });
   }
 
   @override
   void dispose() {
+    _musicIconController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -65,53 +80,76 @@ class _GameScreenState extends State<GameScreen> {
         children: [
           _buildTopBar(context),
           Expanded(
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: games.length,
-              padEnds: true,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = constraints.maxWidth;
+                final double itemWidth = width * 0.18; // Visual card width (25% of screen)
 
-              clipBehavior: Clip.none,
-              itemBuilder: (context, index) {
-                double diff = (index - _currentPage);
+                // Sort indices based on distance from _currentPage to control Z-index
+                // Cards further away are drawn first (bottom), center card is drawn last (top)
+                List<int> indices = List.generate(games.length, (i) => i);
+                indices.sort((a, b) => (b - _currentPage).abs().compareTo((a - _currentPage).abs()));
 
-                // Pop effect logic
-                double value = (1 - (diff.abs() * 0.8)).clamp(0.0, 1.0);
+                return Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    // Render cards in sorted order
+                    ...indices.map((index) {
+                      double diff = (index - _currentPage);
 
-                // Scale from 0.85 to 1.1 (Slight scale)
-                double scale = 0.85 + (value * 0.25);
+                      // Calculate horizontal position
+                      // MUST match viewportFraction for intuitive hit testing and smooth motion
+                      double xOffset = diff * (width * 0.15);
 
+                      // Pop effect logic (scaling)
+                      double value = (1 - (diff.abs() * 0.8)).clamp(0.0, 1.0);
+                      double scale = 0.85 + (value * 0.22);
 
-                return Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (_pageController.page?.round() == index) {
-                        final screen = games[index]['screen'] ??
-                            CategorySelectionScreen(gameTitle: games[index]['title'] ?? '');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (_) => screen),
-                        );
-                      } else {
-                        _pageController.animateToPage(
-                          index,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeInOut,
-                        );
-                      }
-                    },
-                    child: Transform(
-                      transform: Matrix4.identity()
-                        ..scale(scale)
-                        ,
-                      alignment: Alignment.center,
-                      child: Container(
-                        width: MediaQuery.of(context).size.width * 0.2,
-                        height: 250,
-                        margin: EdgeInsets.zero,
-                        child: _buildGameCard(games[index], value > 0.8),
+                      return Transform.translate(
+                        offset: Offset(xOffset, 0),
+                        child: Transform.scale(
+                          scale: scale,
+                          child: SizedBox(
+                            width: itemWidth,
+                            height: 250,
+                            child: _buildGameCard(games[index], value > 0.8),
+                          ),
+                        ),
+                      );
+                    }),
+                    // Invisible PageView on top to capture swipe gestures and handle taps
+                    Positioned.fill(
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: games.length,
+                        padEnds: true,
+                        itemBuilder: (context, index) {
+                          return GestureDetector(
+                            behavior: HitTestBehavior.opaque,
+                            onTap: () {
+                              if ((index - _currentPage).abs() < 0.5) {
+                                final screen = games[index]['screen'] ??
+                                    CategorySelectionScreen(gameTitle: games[index]['title'] ?? '');
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => screen),
+                                );
+                              } else {
+                                _pageController.animateToPage(
+                                  index,
+                                  duration: const Duration(milliseconds: 300),
+                                  curve: Curves.easeInOut,
+                                );
+                              }
+                            },
+                            child: Container(
+                              color: Colors.transparent, // Ensures it's hit-testable
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ),
+                  ],
                 );
               },
             ),
@@ -122,139 +160,146 @@ class _GameScreenState extends State<GameScreen> {
   }
 
   Widget _buildTopBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Left icons
-          Row(
-            children: [
-              _buildRoundIcon('assets/images/person-svg.svg', onTap: () {
-                Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
-              }),
-              const SizedBox(width: 10),
-              _buildRoundIcon('assets/images/music-svg.svg', onTap: () {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            // Left icons
+            Row(
+              children: [
+                _buildRoundIcon('assets/images/person-svg.svg', onTap: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                }),
+                const SizedBox(width: 10),
+                _buildRoundIcon('assets/images/music-svg.svg', onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const TuneSelectionScreen()),
+                  );
+                }),
+                const SizedBox(width: 10),
+                _buildRoundIcon('assets/images/help-svg.svg', onTap: () {
+                  showDialog(context: context, builder: (_) => const VoiceHelpOverlay());
+                }),
+              ],
+            ),
+            // Center logo
+            GestureDetector(
+              onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) => const TuneSelectionScreen()),
+                  MaterialPageRoute(builder: (_) => const MagicArtScreen()),
                 );
-              }),
-              const SizedBox(width: 10),
-              _buildRoundIcon('assets/images/help-svg.svg', onTap: () {
-                showDialog(context: context, builder: (_) => const VoiceHelpOverlay());
-              }),
-            ],
-          ),
-          // Center logo
-          GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => const MagicArtScreen()),
-              );
-            },
-            child: Container(
-              padding: const EdgeInsets.all(4),
-              decoration:  BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.4),
-                shape: BoxShape.circle,
-              ),
-              child: Image.asset(
-                'assets/images/magic_image.png',
-                height: 60,
-                width: 60,
-              ),
-            ),
-          ),
-          // Right icons
-          Row(
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const PortfolioScreen()),
-                  );
-                },
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    // Background Box
-                    Container(
-                      padding: const EdgeInsets.only(
-                        left: 25,
-                        right: 12,
-                        top: 8,
-                        bottom: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFE3F2FD).withOpacity(0.7), // Soft translucent blue
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: const Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'My',
-                            style: TextStyle(
-                              fontSize: 18,
-        fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              height: 1.0,
-                            ),
-                          ),
-                          Text(
-                            'Stuff',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              height: 1.1,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Overlapping Yellow Star Icon
-                    const Positioned(
-                      left: -18,
-                      top: -12,
-                      child: Icon(
-                        Icons.star_rounded,
-                        size: 48,
-                        color: Color(0xFFFFB800), // Bright yellow/gold
-                      ),
-                    ),
-                  ],
+              },
+              child: ScaleTransition(
+                scale: Tween<double>(begin: 1.0, end: 1.5).animate(
+                  CurvedAnimation(parent: _musicIconController, curve: Curves.easeInOut),
                 ),
-              ),
-              const SizedBox(width: 20),
-              GestureDetector(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const RewardScreen()),
-                  );
-                },
                 child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFE3F2FD).withOpacity(0.7), // Soft translucent blue
-                    borderRadius: BorderRadius.circular(12),
+                  padding: const EdgeInsets.all(4),
+                  decoration:  BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
                   ),
                   child: Image.asset(
-                    'assets/images/giftbox.png',
-                    height: 40,
-                    width: 40,
+                    'assets/images/magic_image.png',
+                    height: 80,
+                    width: 80,
                   ),
                 ),
               ),
-            ],
-          ),
-        ],
+            ),
+            // Right icons
+            Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const PortfolioScreen()),
+                    );
+                  },
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      // Background Box
+                      Container(
+                        padding: const EdgeInsets.only(
+                          left: 25,
+                          right: 12,
+                          top: 8,
+                          bottom: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFE3F2FD).withOpacity(0.7), // Soft translucent blue
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'My',
+                              style: TextStyle(
+                                fontSize: 16,
+          fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                height: 1.0,
+                              ),
+                            ),
+                            Text(
+                              'Stuff',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black,
+                                height: 1.1,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+      
+                      // Overlapping Yellow Star Icon
+                      const Positioned(
+                        left: -18,
+                        top: -12,
+                        child: Icon(
+                          Icons.star_rounded,
+                          size: 48,
+                          color: Color(0xFFFFB800), // Bright yellow/gold
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 20),
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const RewardScreen()),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE3F2FD).withOpacity(0.7), // Soft translucent blue
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Image.asset(
+                      'assets/images/giftbox.png',
+                      height: 40,
+                      width: 40,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -298,7 +343,7 @@ class _GameScreenState extends State<GameScreen> {
               borderRadius: BorderRadius.circular(14),
               child: Image.asset(
                 game['image']!,
-                fit: BoxFit.cover,
+                fit: BoxFit.contain,
                 width: double.infinity,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
