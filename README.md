@@ -12,7 +12,7 @@
   <img
     src="assets/images/app_showcase.gif"
     width="300"
-    alt="LittleLit Kids AI App Showcase"
+    alt="LittleLit Kids AI App Showcase" 
   >
 </p>
 
