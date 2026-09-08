@@ -19,7 +19,29 @@ class _GameHubScreenState extends State<GameHubScreen> {
     {'title': 'Build Projects', 'image': 'https://picsum.photos/200/300?random=7'},
   ];
 
-  int _selectedIndex = 1;
+  final PageController _pageController = PageController(
+    initialPage: 1,
+    viewportFraction: 0.24,
+  );
+  double _currentPage = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController.addListener(() {
+      if (_pageController.hasClients) {
+        setState(() {
+          _currentPage = _pageController.page ?? 1.0;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,19 +51,63 @@ class _GameHubScreenState extends State<GameHubScreen> {
           _buildTopBar(),
           const SizedBox(height: 20),
           Expanded(
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-              itemCount: games.length,
-              separatorBuilder: (context, index) => const SizedBox(width: 20),
-              itemBuilder: (context, index) {
-                bool isSelected = index == _selectedIndex;
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedIndex = index),
-                  child: Transform.scale(
-                    scale: isSelected ? 1.1 : 1.0,
-                    child: _buildGameCard(games[index], isSelected),
-                  ),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final double width = constraints.maxWidth;
+                final double itemWidth = (width * 0.22).clamp(180.0, 260.0);
+
+                return PageView.builder(
+                  controller: _pageController,
+                  itemCount: games.length,
+                  physics: const BouncingScrollPhysics(),
+                  padEnds: true,
+                  clipBehavior: Clip.none,
+                  itemBuilder: (context, index) {
+                    return AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, child) {
+                        double pageOffset = 0.0;
+                        if (_pageController.position.haveDimensions) {
+                          pageOffset = (_pageController.page ?? _pageController.initialPage.toDouble()) - index;
+                        } else {
+                          pageOffset = (_currentPage - index);
+                        }
+
+                        final double progress = (1.0 - (pageOffset.abs() * 0.7)).clamp(0.0, 1.0);
+                        final double scale = 0.85 + (progress * 0.22);
+                        final double yOffset = -14.0 * progress;
+                        final bool isSelected = pageOffset.abs() < 0.45;
+
+                        return Center(
+                          child: Transform.translate(
+                            offset: Offset(0, yOffset),
+                            child: Transform.scale(
+                              scale: scale,
+                              child: SizedBox(
+                                width: itemWidth,
+                                height: 280,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () {
+                                    if (isSelected) {
+                                      // Selected action
+                                    } else {
+                                      _pageController.animateToPage(
+                                        index,
+                                        duration: const Duration(milliseconds: 350),
+                                        curve: Curves.easeOutCubic,
+                                      );
+                                    }
+                                  },
+                                  child: _buildGameCard(games[index], isSelected),
+                                ),
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
                 );
               },
             ),

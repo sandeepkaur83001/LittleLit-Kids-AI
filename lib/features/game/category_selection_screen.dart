@@ -22,7 +22,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
   final PageController _pageController = PageController(
     initialPage: 2,
-    viewportFraction: 0.15,
+    viewportFraction: 0.24,
   );
   double _currentPage = 2.0;
 
@@ -58,58 +58,60 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                 child: LayoutBuilder(
                   builder: (context, constraints) {
                     final double width = constraints.maxWidth;
-                    final double itemWidth = width * 0.22;
+                    final double itemWidth = (width * 0.22).clamp(180.0, 260.0);
 
-                    List<int> indices = List.generate(categories.length, (i) => i);
-                    indices.sort((a, b) => (b - _currentPage).abs().compareTo((a - _currentPage).abs()));
+                    return PageView.builder(
+                      controller: _pageController,
+                      itemCount: categories.length,
+                      physics: const BouncingScrollPhysics(),
+                      padEnds: true,
+                      clipBehavior: Clip.none,
+                      itemBuilder: (context, index) {
+                        return AnimatedBuilder(
+                          animation: _pageController,
+                          builder: (context, child) {
+                            double pageOffset = 0.0;
+                            if (_pageController.position.haveDimensions) {
+                              pageOffset = (_pageController.page ?? _pageController.initialPage.toDouble()) - index;
+                            } else {
+                              pageOffset = (_currentPage - index);
+                            }
 
-                    return Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        ...indices.map((index) {
-                          double diff = (index - _currentPage);
-                          double xOffset = diff * (width * 0.15);
+                            final double progress = (1.0 - (pageOffset.abs() * 0.7)).clamp(0.0, 1.0);
+                            final double scale = 0.85 + (progress * 0.22);
+                            final double yOffset = -14.0 * progress;
+                            final bool isSelected = pageOffset.abs() < 0.45;
 
-                          double value = (1 - (diff.abs() * 0.4)).clamp(0.0, 1.0);
-                          double scale = 0.8 + (value * 0.2);
-
-                          return Transform.translate(
-                            offset: Offset(xOffset, 0),
-                            child: Transform.scale(
-                              scale: scale,
-                              child: SizedBox(
-                                width: itemWidth,
-                                height: 280,
-                                child: _buildCategoryCard(categories[index], value > 0.8),
+                            return Center(
+                              child: Transform.translate(
+                                offset: Offset(0, yOffset),
+                                child: Transform.scale(
+                                  scale: scale,
+                                  child: SizedBox(
+                                    width: itemWidth,
+                                    height: 280,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        if (isSelected) {
+                                          // Handle category selection
+                                        } else {
+                                          _pageController.animateToPage(
+                                            index,
+                                            duration: const Duration(milliseconds: 350),
+                                            curve: Curves.easeOutCubic,
+                                          );
+                                        }
+                                      },
+                                      child: _buildCategoryCard(categories[index], isSelected),
+                                    ),
+                                  ),
+                                ),
                               ),
-                            ),
-                          );
-                        }),
-                        Positioned.fill(
-                          child: PageView.builder(
-                            controller: _pageController,
-                            itemCount: categories.length,
-                            padEnds: true,
-                            itemBuilder: (context, index) {
-                              return GestureDetector(
-                                behavior: HitTestBehavior.opaque,
-                                onTap: () {
-                                  if ((index - _currentPage).abs() < 0.5) {
-                                    // Handle category selection
-                                  } else {
-                                    _pageController.animateToPage(
-                                      index,
-                                      duration: const Duration(milliseconds: 300),
-                                      curve: Curves.easeInOut,
-                                    );
-                                  }
-                                },
-                                child: Container(color: Colors.transparent),
-                              );
-                            },
-                          ),
-                        ),
-                      ],
+                            );
+                          },
+                        );
+                      },
                     );
                   },
                 ),

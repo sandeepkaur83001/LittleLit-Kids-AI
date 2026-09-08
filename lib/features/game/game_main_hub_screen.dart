@@ -44,10 +44,19 @@ class _GameMainHubScreenState extends State<GameMainHubScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: Colors.blue.shade100, shape: BoxShape.circle),
-            child: const Icon(Icons.close, size: 30),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Image.asset(
+              'assets/images/src_assets_icons_btn_cross.png',
+              width: 36,
+              height: 36,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.blue.shade100, shape: BoxShape.circle),
+                child: const Icon(Icons.close, size: 30),
+              ),
+            ),
           ),
         ],
       ),
@@ -78,10 +87,16 @@ class _GameMainHubScreenState extends State<GameMainHubScreen> {
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(color: Colors.cyan.shade100, shape: BoxShape.circle),
-                    child: const Icon(Icons.arrow_forward),
+                  Image.asset(
+                    'assets/images/src_assets_images_blue_next.png',
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(color: Colors.cyan.shade100, shape: BoxShape.circle),
+                      child: const Icon(Icons.arrow_forward),
+                    ),
                   ),
                 ],
               ),
@@ -97,7 +112,13 @@ class _GameMainHubScreenState extends State<GameMainHubScreen> {
             ),
             child: Column(
               children: [
-                const Icon(Icons.palette, size: 40, color: Colors.blue),
+                Image.asset(
+                  'assets/images/src_assets_icons_my_portpolio.png',
+                  height: 40,
+                  width: 40,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const Icon(Icons.palette, size: 40, color: Colors.blue),
+                ),
                 Text(
                   'My Portfolio',
                   style: GoogleFonts.comicNeue(fontWeight: FontWeight.bold),

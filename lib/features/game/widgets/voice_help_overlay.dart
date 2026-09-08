@@ -22,14 +22,21 @@ class VoiceHelpOverlay extends StatelessWidget {
               Positioned(
                 top: 0,
                 right: 0,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.close, color: Colors.black54),
-                    onPressed: () => Navigator.pop(context),
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Image.asset(
+                    'assets/images/src_assets_icons_btn_cross.png',
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.shade100,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: Colors.black54),
+                    ),
                   ),
                 ),
               ),
@@ -47,16 +54,24 @@ class VoiceHelpOverlay extends StatelessWidget {
               Positioned(
                 right: 20,
                 top: MediaQuery.of(context).size.height * 0.2,
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFDE047),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(color: Colors.black12, blurRadius: 10, offset: Offset(0, 5)),
-                    ],
+                child: GestureDetector(
+                  onTap: () {
+                    // Start speech listening
+                  },
+                  child: Image.asset(
+                    'assets/images/src_assets_icons_btn_mic.png',
+                    width: 80,
+                    height: 80,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFFDE047),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.mic, size: 60, color: Colors.white),
+                    ),
                   ),
-                  child: const Icon(Icons.mic, size: 60, color: Colors.white),
                 ),
               ),
               Positioned(
@@ -64,13 +79,24 @@ class VoiceHelpOverlay extends StatelessWidget {
                 left: 0,
                 right: 0,
                 child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade100,
-                      shape: BoxShape.circle,
+                  child: GestureDetector(
+                    onTap: () {
+                      // Submit query
+                    },
+                    child: Image.asset(
+                      'assets/images/src_assets_icons_btn_next.png',
+                      width: 44,
+                      height: 44,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(Icons.arrow_forward),
+                      ),
                     ),
-                    child: const Icon(Icons.arrow_forward),
                   ),
                 ),
               ),

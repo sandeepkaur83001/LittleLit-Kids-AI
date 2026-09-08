@@ -38,7 +38,7 @@ class AuthChoiceScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 _buildAuthButton(
-                  iconPath: 'assets/images/google_icon.png',
+                  iconPath: 'assets/images/src_assets_images_google.png',
                   text: 'Sign up with Google',
                   onTap: () {
                     Navigator.push(
@@ -50,7 +50,7 @@ class AuthChoiceScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 15),
                 _buildAuthButton(
-                  iconPath: 'assets/images/email.png',
+                  iconPath: 'assets/images/src_assets_images_email.png',
                   text: 'Sign up with Email',
                   onTap: () {
                     Navigator.push(

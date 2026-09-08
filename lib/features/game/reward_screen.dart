@@ -45,13 +45,19 @@ class _RewardScreenState extends State<RewardScreen> {
           const Spacer(),
           GestureDetector(
             onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.1),
-                shape: BoxShape.circle,
+            child: Image.asset(
+              'assets/images/src_assets_icons_btn_cross.png',
+              width: 36,
+              height: 36,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: Colors.black.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.black54, size: 28),
               ),
-              child: const Icon(Icons.close, color: Colors.black54, size: 28),
             ),
           ),
         ],

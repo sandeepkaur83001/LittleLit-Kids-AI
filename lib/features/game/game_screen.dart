@@ -5,10 +5,16 @@ import 'package:little_kids_ai/features/game/tune_selection_screen.dart';
 import 'package:little_kids_ai/features/game/book_creation_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/voice_help_overlay.dart';
 import 'package:little_kids_ai/features/game/widgets/competition_overlay.dart';
+import 'package:little_kids_ai/features/game/widgets/mood_bottom_sheet.dart';
 import 'package:little_kids_ai/features/game/reward_screen.dart';
 import 'package:little_kids_ai/features/game/category_selection_screen.dart';
 import 'package:little_kids_ai/features/game/portfolio_screen.dart';
 import 'package:little_kids_ai/features/game/magic_art_screen.dart';
+import 'package:little_kids_ai/features/game/coloring_art_screen.dart';
+import 'package:little_kids_ai/features/game/coloring_theme_selection_screen.dart';
+import 'package:little_kids_ai/features/game/puzzle_game_screen.dart';
+
+import 'package:little_kids_ai/features/game/design_apparel_selection_screen.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -18,44 +24,42 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
-  late AnimationController _musicIconController;
-  final List<Map<String, dynamic>> games = [
-    {'title': 'Make Posters', 'image': 'assets/images/make_posters.png'},
-    {'title': 'Design Stuff', 'image': 'assets/images/design_stuff.png'},
-    {'title': 'Write Storybooks', 'image': 'assets/images/write_storybooks.png', 'screen': const BookCreationScreen()},
-    {'title': 'Design Puzzles', 'image': 'assets/images/design_puzzels.png'},
-    {'title': 'Design Stuff', 'image': 'assets/images/design_stuff.png'},
+  late AnimationController _magicGlowController;
 
+  final List<Map<String, dynamic>> games = [
+    {'title': 'Make Posters', 'image': 'assets/images/make_posters.png', 'screen': const MagicArtScreen()},
+    {'title': 'Write Storybook', 'image': 'assets/images/write_storybooks.png', 'screen': const BookCreationScreen()},
+    {'title': 'Design Puzzles', 'image': 'assets/images/design_puzzels.png', 'screen': const PuzzleGameScreen()},
+    {'title': 'Design Stuff', 'image': 'assets/images/design_stuff.png', 'screen': const DesignApparelSelectionScreen()},
     {'title': 'Create Songs', 'image': 'assets/images/create_songs.png', 'screen': const TuneSelectionScreen()},
-    {'title': 'Coloring Art', 'image': 'assets/images/coloring_arts.png'},
-    {'title': 'Build Projects', 'image': 'assets/images/build_projects.png'},
-    {'title': 'Design Stuff', 'image': 'assets/images/design_stuff.png'},
-    {'title': 'Design Stuff', 'image': 'assets/images/design_stuff.png'},
+    {'title': 'Coloring Art', 'image': 'assets/images/coloring_arts.png', 'screen': const ColoringThemeSelectionScreen()},
+    {'title': 'Build Projects', 'image': 'assets/images/build_projects.png', 'screen': const PuzzleGameScreen()},
   ];
 
-  final PageController _pageController = PageController(
-    initialPage: 1,
-    viewportFraction: 0.1, // Slot size for each item (15% of width)
-  );
-  double _currentPage = 1.0;
+  late PageController _pageController;
+  double _currentPage = 2.0; // Focus on 'Design Puzzles' or 'Create Songs'
 
   @override
   void initState() {
     super.initState();
-    _musicIconController = AnimationController(
+    _magicGlowController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
-    // _loadGameData(); // API Call: Fetching available games from server
+
+    _pageController = PageController(
+      initialPage: 2,
+      viewportFraction: 0.23,
+    );
+
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 1.0;
+          _currentPage = _pageController.page ?? 2.0;
         });
       }
     });
 
-    // Show competition overlay on redirect
     WidgetsBinding.instance.addPostFrameCallback((_) {
       showDialog(
         context: context,
@@ -67,7 +71,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
   @override
   void dispose() {
-    _musicIconController.dispose();
+    _magicGlowController.dispose();
     _pageController.dispose();
     super.dispose();
   }
@@ -83,77 +87,72 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final double width = constraints.maxWidth;
-                final double itemWidth = width * 0.18; // Visual card width (25% of screen)
+                final double slotWidth = width * 0.23;
+                final double itemWidth = slotWidth - 6.0;
 
-                // Sort indices based on distance from _currentPage to control Z-index
-                // Cards further away are drawn first (bottom), center card is drawn last (top)
-                List<int> indices = List.generate(games.length, (i) => i);
-                indices.sort((a, b) => (b - _currentPage).abs().compareTo((a - _currentPage).abs()));
+                return PageView.builder(
+                  controller: _pageController,
+                  itemCount: games.length,
+                  physics: const BouncingScrollPhysics(),
+                  padEnds: true,
+                  clipBehavior: Clip.none,
+                  itemBuilder: (context, index) {
+                    return AnimatedBuilder(
+                      animation: _pageController,
+                      builder: (context, child) {
+                        double pageOffset = 0.0;
+                        if (_pageController.position.haveDimensions) {
+                          pageOffset = (_pageController.page ?? _pageController.initialPage.toDouble()) - index;
+                        } else {
+                          pageOffset = (_currentPage - index);
+                        }
 
-                return Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    // Render cards in sorted order
-                    ...indices.map((index) {
-                      double diff = (index - _currentPage);
+                        // Smooth curve for scale, elevation, and pop
+                        final double progress = (1.0 - (pageOffset.abs() * 0.75)).clamp(0.0, 1.0);
+                        final double scale = 0.88 + (progress * 0.18);
+                        final double yOffset = -20.0 * progress;
+                        final bool isSelected = pageOffset.abs() < 0.45;
 
-                      // Calculate horizontal position
-                      // MUST match viewportFraction for intuitive hit testing and smooth motion
-                      double xOffset = diff * (width * 0.15);
-
-                      // Pop effect logic (scaling)
-                      double value = (1 - (diff.abs() * 0.8)).clamp(0.0, 1.0);
-                      double scale = 0.85 + (value * 0.22);
-
-                      return Transform.translate(
-                        offset: Offset(xOffset, 0),
-                        child: Transform.scale(
-                          scale: scale,
-                          child: SizedBox(
-                            width: itemWidth,
-                            height: 250,
-                            child: _buildGameCard(games[index], value > 0.8),
-                          ),
-                        ),
-                      );
-                    }),
-                    // Invisible PageView on top to capture swipe gestures and handle taps
-                    Positioned.fill(
-                      child: PageView.builder(
-                        controller: _pageController,
-                        itemCount: games.length,
-                        padEnds: true,
-                        itemBuilder: (context, index) {
-                          return GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              if ((index - _currentPage).abs() < 0.5) {
-                                final screen = games[index]['screen'] ??
-                                    CategorySelectionScreen(gameTitle: games[index]['title'] ?? '');
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(builder: (_) => screen),
-                                );
-                              } else {
-                                _pageController.animateToPage(
-                                  index,
-                                  duration: const Duration(milliseconds: 300),
-                                  curve: Curves.easeInOut,
-                                );
-                              }
-                            },
-                            child: Container(
-                              color: Colors.transparent, // Ensures it's hit-testable
+                        return Center(
+                          child: Transform.translate(
+                            offset: Offset(0, yOffset),
+                            child: Transform.scale(
+                              scale: scale,
+                              child: SizedBox(
+                                width: itemWidth,
+                                height: constraints.maxHeight * 0.82,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () {
+                                    if (isSelected) {
+                                      final screen = games[index]['screen'] ??
+                                          CategorySelectionScreen(gameTitle: games[index]['title'] ?? '');
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(builder: (_) => screen),
+                                      );
+                                    } else {
+                                      _pageController.animateToPage(
+                                        index,
+                                        duration: const Duration(milliseconds: 350),
+                                        curve: Curves.easeOutCubic,
+                                      );
+                                    }
+                                  },
+                                  child: _buildGameCard(games[index], isSelected),
+                                ),
+                              ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                          ),
+                        );
+                      },
+                    );
+                  },
                 );
               },
             ),
           ),
+          const SizedBox(height: 12),
         ],
       ),
     );
@@ -162,30 +161,50 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   Widget _buildTopBar(BuildContext context) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            // Left icons
+            // Left Action Icons
             Row(
               children: [
-                _buildRoundIcon('assets/images/person-svg.svg', onTap: () {
-                  Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
-                }),
-                const SizedBox(width: 10),
-                _buildRoundIcon('assets/images/music-svg.svg', onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => const TuneSelectionScreen()),
-                  );
-                }),
-                const SizedBox(width: 10),
-                _buildRoundIcon('assets/images/help-svg.svg', onTap: () {
-                  showDialog(context: context, builder: (_) => const VoiceHelpOverlay());
-                }),
+                _buildCircularGlassButton(
+                  imagePath: 'assets/images/profile_icon.png',
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SettingsScreen()),
+                    );
+                  },
+                ),
+                const SizedBox(width: 14),
+                _buildCircularGlassButton(
+                  imagePath: 'assets/images/music_icon.png',
+                  onTap: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      backgroundColor: Colors.transparent,
+                      constraints: const BoxConstraints(
+                        maxWidth: double.infinity,
+                        minWidth: double.infinity,
+                      ),
+                      builder: (context) => const MoodBottomSheet(),
+                    );
+                  },
+                ),
+                const SizedBox(width: 14),
+                _buildCircularGlassButton(
+                  imagePath: 'assets/images/help_icon.png',
+                  onTap: () {
+                    showDialog(context: context, builder: (_) => const VoiceHelpOverlay());
+                  },
+                ),
               ],
             ),
-            // Center logo
+
+            // Center Magic Art Badge
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -193,25 +212,43 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                   MaterialPageRoute(builder: (_) => const MagicArtScreen()),
                 );
               },
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 1.0, end: 1.5).animate(
-                  CurvedAnimation(parent: _musicIconController, curve: Curves.easeInOut),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration:  BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.4),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Image.asset(
-                    'assets/images/magic_image.png',
-                    height: 80,
-                    width: 80,
-                  ),
-                ),
+              child: AnimatedBuilder(
+                animation: _magicGlowController,
+                builder: (context, child) {
+                  final scale = Tween<double>(begin: 0.92, end: 1.18).transform(
+                    Curves.easeInOut.transform(_magicGlowController.value),
+                  );
+                  return Transform.scale(
+                    scale: scale,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.transparent,
+                        border: Border.all(
+                          color: Colors.white,
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Image.asset(
+                        'assets/images/src_assets_icons_magic_art.png',
+                        height: 72,
+                        width: 72,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Image.asset(
+                          'assets/images/magic_image.png',
+                          height: 72,
+                          width: 72,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
-            // Right icons
+
+            // Right Badges (My Stuff & Gift Box)
             Row(
               children: [
                 GestureDetector(
@@ -221,61 +258,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                       MaterialPageRoute(builder: (_) => const PortfolioScreen()),
                     );
                   },
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      // Background Box
-                      Container(
-                        padding: const EdgeInsets.only(
-                          left: 25,
-                          right: 12,
-                          top: 8,
-                          bottom: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE3F2FD).withOpacity(0.7), // Soft translucent blue
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: const Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'My',
-                              style: TextStyle(
-                                fontSize: 16,
-          fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                height: 1.0,
-                              ),
-                            ),
-                            Text(
-                              'Stuff',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                height: 1.1,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-      
-                      // Overlapping Yellow Star Icon
-                      const Positioned(
-                        left: -18,
-                        top: -12,
-                        child: Icon(
-                          Icons.star_rounded,
-                          size: 48,
-                          color: Color(0xFFFFB800), // Bright yellow/gold
-                        ),
-                      ),
-                    ],
+                  child: Image.asset(
+                    'assets/images/src_assets_icons_my_stuff.png',
+                    height: 48,
+                    fit: BoxFit.contain,
                   ),
                 ),
-                const SizedBox(width: 20),
+                const SizedBox(width: 14),
                 GestureDetector(
                   onTap: () {
                     Navigator.push(
@@ -284,15 +273,28 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(10),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE3F2FD).withOpacity(0.7), // Soft translucent blue
-                      borderRadius: BorderRadius.circular(12),
+                      color: const Color(0xFFE1F5FE).withOpacity(0.85),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.2),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.06),
+                          blurRadius: 6,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Image.asset(
                       'assets/images/giftbox.png',
-                      height: 40,
-                      width: 40,
+                      height: 38,
+                      width: 38,
+                      errorBuilder: (context, error, stackTrace) => const Icon(
+                        Icons.card_giftcard_rounded,
+                        color: Color(0xFFEF5350),
+                        size: 34,
+                      ),
                     ),
                   ),
                 ),
@@ -304,35 +306,41 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
     );
   }
 
-  Widget _buildRoundIcon(String svgPath, {VoidCallback? onTap}) {
+  Widget _buildCircularGlassButton({
+    IconData? icon,
+    String? imagePath,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
-        ),
-        child: SvgPicture.asset(
-          svgPath,
-          height: 40,
-          width: 40,
-        ),
-      ),
+      behavior: HitTestBehavior.opaque,
+      child: imagePath != null
+          ? Image.asset(
+              imagePath,
+              width: 50,
+              height: 50,
+              fit: BoxFit.contain,
+            )
+          : Icon(
+              icon,
+              size: 28,
+              color: const Color(0xFF455A64),
+            ),
     );
   }
 
   Widget _buildGameCard(Map<String, dynamic> game, bool isSelected) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 8),
+      padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.08),
-            blurRadius: isSelected ? 18 : 8,
+            color: Colors.black.withOpacity(isSelected ? 0.20 : 0.08),
+            blurRadius: isSelected ? 16 : 6,
             spreadRadius: isSelected ? 1 : 0,
-            offset: Offset(0, isSelected ? 10 : 4),
+            offset: Offset(0, isSelected ? 8 : 3),
           ),
         ],
       ),
@@ -343,7 +351,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               borderRadius: BorderRadius.circular(14),
               child: Image.asset(
                 game['image']!,
-                fit: BoxFit.contain,
+                fit: BoxFit.cover,
                 width: double.infinity,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
@@ -355,7 +363,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
             ),
           ),
           Container(
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.only(top: 8, bottom: 2),
             alignment: Alignment.center,
             child: Text(
               game['title'] ?? '',
@@ -363,10 +371,9 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.comicNeue(
-                fontSize: 19,
-                fontWeight: FontWeight.bold,
-                color: const Color(0xFF1C1C1E),
-                letterSpacing: -0.2,
+                fontSize: isSelected ? 17 : 15,
+                fontWeight: FontWeight.w900,
+                color: const Color(0xFF1E293B),
               ),
             ),
           ),

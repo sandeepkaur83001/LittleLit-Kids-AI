@@ -1,8 +1,46 @@
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:little_kids_ai/features/game/story_reader_screen.dart';
 
-class BookCreationScreen extends StatelessWidget {
+class BookCreationScreen extends StatefulWidget {
   const BookCreationScreen({super.key});
+
+  @override
+  State<BookCreationScreen> createState() => _BookCreationScreenState();
+}
+
+class _BookCreationScreenState extends State<BookCreationScreen> {
+  final List<Map<String, String>> bookThemes = [
+    {'title': 'Theme', 'image': 'https://picsum.photos/400/400?random=21'},
+    {'title': 'Fantasy', 'image': 'https://picsum.photos/400/400?random=22'},
+    {'title': 'Mystery', 'image': 'https://picsum.photos/400/400?random=23'},
+    {'title': 'Diary', 'image': 'https://picsum.photos/400/400?random=24'},
+  ];
+
+  late PageController _pageController;
+  double _currentPage = 0.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController(
+      initialPage: 0,
+      viewportFraction: 0.30,
+    );
+    _pageController.addListener(() {
+      if (_pageController.hasClients) {
+        setState(() {
+          _currentPage = _pageController.page ?? 0.0;
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,9 +61,13 @@ class BookCreationScreen extends StatelessWidget {
                 top: 20,
                 left: 30,
                 child: Image.asset(
-                  'assets/images/book.png',
+                  'assets/images/src_assets_images_just_read_story.png',
                   height: 120,
                   fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Image.asset(
+                    'assets/images/book.png',
+                    height: 120,
+                  ),
                 ),
               ),
 
@@ -35,26 +77,25 @@ class BookCreationScreen extends StatelessWidget {
                 right: 20,
                 child: GestureDetector(
                   onTap: () => Navigator.pop(context),
-                  child: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFC5E1A5), // Pale green
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.1),
-                          blurRadius: 4,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
+                  child: Image.asset(
+                    'assets/images/src_assets_icons_btn_cross.png',
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFC5E1A5),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, color: Colors.black54, size: 28),
                     ),
-                    child: const Icon(Icons.close, color: Colors.black54, size: 28),
                   ),
                 ),
               ),
 
               Padding(
-                padding: const EdgeInsets.fromLTRB(160, 40, 60, 20),
+                padding: const EdgeInsets.fromLTRB(160, 30, 60, 20),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -67,21 +108,56 @@ class BookCreationScreen extends StatelessWidget {
                         color: Colors.black87,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    const SizedBox(height: 16),
                     Expanded(
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            _buildBookCard('Theme', 'https://picsum.photos/400/400?random=21'),
-                            const SizedBox(width: 15),
-                            _buildBookCard('Fantasy', 'https://picsum.photos/400/400?random=22'),
-                            const SizedBox(width: 15),
-                            _buildBookCard('Mystery', 'https://picsum.photos/400/400?random=23'),
-                            const SizedBox(width: 15),
-                            _buildBookCard('Diary', 'https://picsum.photos/400/400?random=24'),
-                          ],
-                        ),
+                      child: PageView.builder(
+                        controller: _pageController,
+                        itemCount: bookThemes.length,
+                        physics: const BouncingScrollPhysics(),
+                        padEnds: false,
+                        clipBehavior: Clip.none,
+                        itemBuilder: (context, index) {
+                          return AnimatedBuilder(
+                            animation: _pageController,
+                            builder: (context, child) {
+                              double pageOffset = 0.0;
+                              if (_pageController.position.haveDimensions) {
+                                pageOffset = (_pageController.page ?? _pageController.initialPage.toDouble()) - index;
+                              } else {
+                                pageOffset = (_currentPage - index);
+                              }
+
+                              final double progress = (1.0 - (pageOffset.abs() * 0.5)).clamp(0.0, 1.0);
+                              final double scale = 0.88 + (progress * 0.16);
+                              final bool isSelected = pageOffset.abs() < 0.45;
+
+                              return Center(
+                                child: Transform.scale(
+                                  scale: scale,
+                                  child: GestureDetector(
+                                    behavior: HitTestBehavior.opaque,
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (_) => StoryReaderScreen(
+                                            storyTitle: '${bookThemes[index]['title']} Adventure',
+                                            themeName: bookThemes[index]['title']!,
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: _buildBookCard(
+                                      bookThemes[index]['title']!,
+                                      bookThemes[index]['image']!,
+                                      isSelected,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
                       ),
                     ),
                   ],
@@ -94,64 +170,52 @@ class BookCreationScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildBookCard(String title, String imageUrl) {
+  Widget _buildBookCard(String title, String imageUrl, bool isSelected) {
     return Container(
       width: 140,
-      margin: const EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
-            blurRadius: 10,
-            offset: const Offset(0, 5),
+            color: Colors.black.withOpacity(isSelected ? 0.25 : 0.1),
+            blurRadius: isSelected ? 12 : 6,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
       child: Column(
         children: [
           Expanded(
-            child: Container(
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                color: Color(0xFF006064), // Dark teal book spine/cover
-                borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              ),
-              padding: const EdgeInsets.all(6),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: Image.network(
-                  imageUrl,
+            child: ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                errorBuilder: (context, error, stackTrace) => Image.asset(
+                  'assets/images/src_assets_images_defalt_cover.png',
                   fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (_, __, ___) => Container(
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.broken_image, color: Colors.grey),
+                  ),
                 ),
               ),
             ),
           ),
           Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            decoration: const BoxDecoration(
-              color: Color(0xFF006064),
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
-            ),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            alignment: Alignment.center,
             child: Text(
               title,
-              textAlign: TextAlign.center,
               style: GoogleFonts.comicNeue(
-                color: Colors.white,
-                fontSize: 18,
+                fontSize: 16,
                 fontWeight: FontWeight.bold,
+                color: Colors.black87,
               ),
-            ),
-          ),
-          // White "pages" effect at the bottom
-          Container(
-            height: 10,
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.vertical(bottom: Radius.circular(12)),
             ),
           ),
         ],
