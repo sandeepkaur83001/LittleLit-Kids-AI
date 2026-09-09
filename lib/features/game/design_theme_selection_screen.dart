@@ -1,64 +1,66 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
-import 'package:little_kids_ai/features/game/design_theme_selection_screen.dart';
+import 'package:little_kids_ai/features/game/subscription_screen.dart';
 
-class DesignApparelSelectionScreen extends StatefulWidget {
-  const DesignApparelSelectionScreen({super.key});
+class DesignThemeSelectionScreen extends StatefulWidget {
+  final String selectedDesignTitle;
+  final String? selectedDesignImage;
+
+  const DesignThemeSelectionScreen({
+    super.key,
+    this.selectedDesignTitle = 'Make a fun card',
+    this.selectedDesignImage,
+  });
 
   @override
-  State<DesignApparelSelectionScreen> createState() => _DesignApparelSelectionScreenState();
+  State<DesignThemeSelectionScreen> createState() => _DesignThemeSelectionScreenState();
 }
 
-class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScreen> {
-  late PageController _pageController;
-  double _currentPage = 2.0;
-
-  final List<Map<String, dynamic>> _designCards = [
+class _DesignThemeSelectionScreenState extends State<DesignThemeSelectionScreen> {
+  final List<Map<String, dynamic>> themes = [
     {
-      'title': 'Design Shoes, Bottles, Hats',
-      'image': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+      'title': 'Boats',
+      'image': 'https://picsum.photos/400/400?random=41',
     },
     {
-      'title': 'Decorate yummy cakes',
-      'image': 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=600&auto=format&fit=crop&q=80',
+      'title': 'Community Helpers',
+      'image': 'https://picsum.photos/400/400?random=42',
     },
     {
-      'title': 'Make a fun card',
-      'image': 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600&auto=format&fit=crop&q=80',
+      'title': 'Farm',
+      'image': 'https://picsum.photos/400/400?random=43',
     },
     {
-      'title': 'Design Tshirts n more',
-      'image': 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=600&auto=format&fit=crop&q=80',
+      'title': 'Animal Kingdom',
+      'image': 'https://picsum.photos/400/400?random=44',
     },
     {
-      'title': 'Decorate Christmas Tree',
-      'image': 'https://images.unsplash.com/photo-1543258103-a62bdc069871?w=600&auto=format&fit=crop&q=80',
+      'title': 'Fruits & Vegetables',
+      'image': 'https://picsum.photos/400/400?random=45',
     },
     {
-      'title': 'Design cool backpacks',
-      'image': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      'title': 'Your idea',
+      'title': 'Your theme',
       'isSpecial': true,
     },
   ];
+
+  late PageController _pageController;
+  double _currentPage = 3.0; // Focus on 'Animal Kingdom'
 
   @override
   void initState() {
     super.initState();
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 2,
+      initialPage: 3,
       viewportFraction: viewportFraction,
     );
-    _currentPage = 2.0;
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 2.0;
+          _currentPage = _pageController.page ?? 3.0;
         });
       }
     });
@@ -70,14 +72,11 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
     super.dispose();
   }
 
-  void _onDesignCardSelected(Map<String, dynamic> card) {
+  void _onThemeSelected(Map<String, dynamic> theme) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => DesignThemeSelectionScreen(
-          selectedDesignTitle: card['title'] ?? 'Make a fun card',
-          selectedDesignImage: card['image'],
-        ),
+        builder: (_) => const SubscriptionScreen(),
       ),
     );
   }
@@ -104,7 +103,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
 
                       return PageView.builder(
                         controller: _pageController,
-                        itemCount: _designCards.length,
+                        itemCount: themes.length,
                         physics: const BouncingScrollPhysics(),
                         padEnds: true,
                         clipBehavior: Clip.none,
@@ -136,7 +135,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
                                         behavior: HitTestBehavior.opaque,
                                         onTap: () {
                                           if (isSelected) {
-                                            _onDesignCardSelected(_designCards[index]);
+                                            _onThemeSelected(themes[index]);
                                           } else {
                                             _pageController.animateToPage(
                                               index,
@@ -145,7 +144,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
                                             );
                                           }
                                         },
-                                        child: _buildDesignCard(_designCards[index], isSelected),
+                                        child: _buildThemeCard(themes[index], isSelected),
                                       ),
                                     ),
                                   ),
@@ -162,39 +161,23 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
               ],
             ),
 
-            // Chameleon mascot in bottom left
+            // Top-left mini deck showing previous card art & title (Back button)
+            Positioned(
+              top: 6,
+              left: 14,
+              child: _buildTopLeftDeckButton(context),
+            ),
+
+            // Chameleon mascot in bottom right
             Positioned(
               bottom: 8,
-              left: 18,
+              right: 20,
               child: IgnorePointer(
                 child: Image.asset(
                   'assets/images/chameleon.png',
-                  height: 155,
+                  height: 170,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => const SizedBox.shrink(),
-                ),
-              ),
-            ),
-
-            // Home button in bottom right
-            Positioned(
-              bottom: 16,
-              right: 22,
-              child: GestureDetector(
-                onTap: () => Navigator.popUntil(context, (r) => r.isFirst),
-                child: Image.asset(
-                  'assets/images/src_assets_icons_btn_home.png',
-                  width: 48,
-                  height: 48,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF64B5F6).withOpacity(0.85),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.home_rounded, color: Colors.white, size: 28),
-                  ),
                 ),
               ),
             ),
@@ -207,35 +190,35 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
   Widget _buildTopBar(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      child: Stack(
-        alignment: Alignment.center,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60),
-              child: Text(
-                'What should we design today?',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
-                  fontSize: 26,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFF0F172A),
-                ),
+          // Spacer to account for top-left mini card
+          const SizedBox(width: 76),
+
+          // Center Title
+          Expanded(
+            child: Text(
+              'Pick a theme to begin',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1E293B),
               ),
             ),
           ),
-          Positioned(
-            right: 0,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(7),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF80CBC4).withOpacity(0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close, color: Colors.black54, size: 22),
+
+          // Close button
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF80CBC4).withOpacity(0.6),
+                shape: BoxShape.circle,
               ),
+              child: const Icon(Icons.close, color: Colors.black54, size: 24),
             ),
           ),
         ],
@@ -243,9 +226,137 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
     );
   }
 
-  Widget _buildDesignCard(Map<String, dynamic> item, bool isSelected) {
-    if (item['isSpecial'] == true) {
-      return _buildSpecialCard(item, isSelected);
+  Widget _buildTopLeftDeckButton(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Navigator.pop(context),
+      child: Container(
+        width: 72,
+        height: 94,
+        color: Colors.transparent,
+        child: Stack(
+          children: [
+            // Layer 1 (bottom layer)
+            Positioned(
+              left: 0,
+              top: 0,
+              child: Container(
+                width: 60,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.10),
+                      blurRadius: 3,
+                      offset: const Offset(0, 1),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Layer 2 (middle layer)
+            Positioned(
+              left: 3,
+              top: 2,
+              child: Container(
+                width: 60,
+                height: 80,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.12),
+                      blurRadius: 4,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            // Layer 3 (top card)
+            Positioned(
+              left: 6,
+              top: 4,
+              child: Container(
+                width: 60,
+                height: 80,
+                padding: const EdgeInsets.all(3),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(6),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.18),
+                      blurRadius: 6,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: _buildDesignThumbnail(),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      widget.selectedDesignTitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.comicNeue(
+                        fontSize: 7.5,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDesignThumbnail() {
+    if (widget.selectedDesignImage != null && widget.selectedDesignImage!.isNotEmpty) {
+      if (widget.selectedDesignImage!.startsWith('http')) {
+        return Image.network(
+          widget.selectedDesignImage!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (_, __, ___) => Image.asset(
+            'assets/images/design_stuff.png',
+            fit: BoxFit.cover,
+          ),
+        );
+      } else {
+        return Image.asset(
+          widget.selectedDesignImage!,
+          fit: BoxFit.cover,
+          width: double.infinity,
+          errorBuilder: (_, __, ___) => Image.asset(
+            'assets/images/design_stuff.png',
+            fit: BoxFit.cover,
+          ),
+        );
+      }
+    }
+    return Image.asset(
+      'assets/images/design_stuff.png',
+      fit: BoxFit.cover,
+    );
+  }
+
+  Widget _buildThemeCard(Map<String, dynamic> theme, bool isSelected) {
+    if (theme['isSpecial'] == true) {
+      return _buildSpecialCard(theme, isSelected);
     }
 
     return Container(
@@ -255,7 +366,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
+            color: Colors.black.withOpacity(isSelected ? 0.20 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -268,7 +379,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                item['image'] ?? 'https://picsum.photos/400/400',
+                theme['image'],
                 fit: BoxFit.cover,
                 width: double.infinity,
                 alignment: Alignment.center,
@@ -285,7 +396,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              item['title'] ?? '',
+              theme['title'],
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -301,7 +412,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
     );
   }
 
-  Widget _buildSpecialCard(Map<String, dynamic> item, bool isSelected) {
+  Widget _buildSpecialCard(Map<String, dynamic> theme, bool isSelected) {
     return Container(
       padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
       decoration: BoxDecoration(
@@ -309,7 +420,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
+            color: Colors.black.withOpacity(isSelected ? 0.20 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -374,7 +485,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              item['title'] ?? 'Your idea',
+              theme['title'],
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

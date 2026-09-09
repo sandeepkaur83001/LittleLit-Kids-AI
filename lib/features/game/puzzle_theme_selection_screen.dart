@@ -1,46 +1,59 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
-import 'package:little_kids_ai/features/game/poster_question_selection_screen.dart';
+import 'package:little_kids_ai/features/game/game_play_selection_screen.dart';
 
-class CategorySelectionScreen extends StatefulWidget {
-  final String gameTitle;
-  const CategorySelectionScreen({super.key, required this.gameTitle});
+class PuzzleThemeSelectionScreen extends StatefulWidget {
+  const PuzzleThemeSelectionScreen({super.key});
 
   @override
-  State<CategorySelectionScreen> createState() => _CategorySelectionScreenState();
+  State<PuzzleThemeSelectionScreen> createState() => _PuzzleThemeSelectionScreenState();
 }
 
-class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
-  final List<Map<String, dynamic>> categories = [
-    {'title': 'Transportation', 'image': 'https://picsum.photos/400/400?random=11'},
-    {'title': 'Forests & Animals', 'image': 'https://picsum.photos/400/400?random=12'},
-    {'title': 'Human Body', 'image': 'https://picsum.photos/400/400?random=13'},
-    {'title': 'Earth and World', 'image': 'https://picsum.photos/400/400?random=14'},
-    {'title': 'Ask Your Question', 'isSpecial': true},
-    {'title': 'Women Heroes', 'image': 'https://picsum.photos/400/400?random=15'},
-    {'title': 'Science', 'image': 'https://picsum.photos/400/400?random=16'},
-    {'title': 'Festivals', 'image': 'https://picsum.photos/400/400?random=17'},
-    {'title': 'Community Helpers', 'image': 'https://picsum.photos/400/400?random=18'},
-    {'title': 'Feelings', 'image': 'https://picsum.photos/400/400?random=19'},
+class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen> {
+  final List<Map<String, dynamic>> themes = [
+    {
+      'title': 'Boats',
+      'image': 'https://picsum.photos/400/400?random=41',
+    },
+    {
+      'title': 'Community Helpers',
+      'image': 'https://picsum.photos/400/400?random=42',
+    },
+    {
+      'title': 'Farm',
+      'image': 'https://picsum.photos/400/400?random=43',
+    },
+    {
+      'title': 'Animal Kingdom',
+      'image': 'https://picsum.photos/400/400?random=44',
+    },
+    {
+      'title': 'Fruits & Vegetables',
+      'image': 'https://picsum.photos/400/400?random=45',
+    },
+    {
+      'title': 'Your theme',
+      'isSpecial': true,
+    },
   ];
 
   late PageController _pageController;
-  double _currentPage = 2.0;
+  double _currentPage = 3.0; // Focus on 'Animal Kingdom'
 
   @override
   void initState() {
     super.initState();
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 2,
+      initialPage: 3,
       viewportFraction: viewportFraction,
     );
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 2.0;
+          _currentPage = _pageController.page ?? 3.0;
         });
       }
     });
@@ -52,10 +65,22 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     super.dispose();
   }
 
+  void _onThemeSelected(Map<String, dynamic> theme) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => GamePlaySelectionScreen(
+          selectedThemeTitle: theme['title'] ?? 'Animal Kingdom',
+          selectedThemeImage: theme['image'],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return GameBackground(
-      backgroundImage: 'assets/images/src_assets_background_litto_back.png',
+      backgroundImage: 'assets/images/hills_background_clean.png',
       child: Stack(
         children: [
           Column(
@@ -73,7 +98,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
                     return PageView.builder(
                       controller: _pageController,
-                      itemCount: categories.length,
+                      itemCount: themes.length,
                       physics: const BouncingScrollPhysics(),
                       padEnds: true,
                       clipBehavior: Clip.none,
@@ -105,14 +130,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                                       behavior: HitTestBehavior.opaque,
                                       onTap: () {
                                         if (isSelected) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => PosterQuestionSelectionScreen(
-                                                categoryTitle: categories[index]['title'] ?? 'Science',
-                                              ),
-                                            ),
-                                          );
+                                          _onThemeSelected(themes[index]);
                                         } else {
                                           _pageController.animateToPage(
                                             index,
@@ -121,7 +139,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                                           );
                                         }
                                       },
-                                      child: _buildCategoryCard(categories[index], isSelected),
+                                      child: _buildThemeCard(themes[index], isSelected),
                                     ),
                                   ),
                                 ),
@@ -134,8 +152,20 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                   },
                 ),
               ),
-              const SizedBox(height: 35),
+              const SizedBox(height: 40),
             ],
+          ),
+
+          // Chameleon mascot in bottom right
+          Positioned(
+            bottom: 10,
+            right: 24,
+            child: Image.asset(
+              'assets/images/chameleon.png',
+              height: 190,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => const SizedBox.shrink(),
+            ),
           ),
         ],
       ),
@@ -144,36 +174,42 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
   Widget _buildTopBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Stack(
-        alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Center(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 60),
-              child: Text(
-                'What kind of question should we learn about today?',
-                textAlign: TextAlign.center,
-                style: GoogleFonts.nunito(
-                  fontSize: 23,
-                  fontWeight: FontWeight.w900,
-                  color: const Color(0xFF111827),
-                ),
+          // Top-left mini chameleon
+          Image.asset(
+            'assets/images/chameleon.png',
+            height: 60,
+            width: 60,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox(width: 60),
+          ),
+
+          // Center Title
+          Expanded(
+            child: Text(
+              'Pick a theme to begin',
+              textAlign: TextAlign.center,
+              style: GoogleFonts.nunito(
+                fontSize: 26,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1E293B),
               ),
             ),
           ),
-          Positioned(
-            right: 0,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF80CBC4).withOpacity(0.5),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.close, color: Colors.black54, size: 24),
+
+          // Close button
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: const Color(0xFF80CBC4).withOpacity(0.6),
+                shape: BoxShape.circle,
               ),
+              child: const Icon(Icons.close, color: Colors.black54, size: 26),
             ),
           ),
         ],
@@ -181,9 +217,9 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     );
   }
 
-  Widget _buildCategoryCard(Map<String, dynamic> category, bool isSelected) {
-    if (category['isSpecial'] == true) {
-      return _buildSpecialCard(category, isSelected);
+  Widget _buildThemeCard(Map<String, dynamic> theme, bool isSelected) {
+    if (theme['isSpecial'] == true) {
+      return _buildSpecialCard(theme, isSelected);
     }
 
     return Container(
@@ -193,7 +229,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
+            color: Colors.black.withOpacity(isSelected ? 0.20 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -206,7 +242,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                category['image'],
+                theme['image'],
                 fit: BoxFit.cover,
                 width: double.infinity,
                 alignment: Alignment.center,
@@ -223,7 +259,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              category['title'],
+              theme['title'],
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -239,7 +275,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     );
   }
 
-  Widget _buildSpecialCard(Map<String, dynamic> category, bool isSelected) {
+  Widget _buildSpecialCard(Map<String, dynamic> theme, bool isSelected) {
     return Container(
       padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
       decoration: BoxDecoration(
@@ -247,7 +283,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
+            color: Colors.black.withOpacity(isSelected ? 0.20 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -262,7 +298,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF95DBAC), // Green card color #95dbac
+                  color: Color(0xFF95DBAC),
                 ),
                 child: Stack(
                   children: [
@@ -283,7 +319,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: const BoxDecoration(
-                              color: Color(0xFFFFD54F), // Golden yellow mic
+                              color: Color(0xFFFFD54F),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(Icons.mic, color: Colors.white, size: 28),
@@ -312,7 +348,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              category['title'],
+              theme['title'],
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

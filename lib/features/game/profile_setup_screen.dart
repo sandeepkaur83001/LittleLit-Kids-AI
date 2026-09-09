@@ -15,25 +15,33 @@ class _ProfileSetupScreenState extends State<ProfileSetupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+    final isTablet = mediaQuery.size.shortestSide >= 600;
+    final screenWidth = mediaQuery.size.width;
+
     return GameBackground(
       showBackButton: true,
       child: Center(
-        child: Container(
-          width: MediaQuery.of(context).size.width * 0.75,
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
-            borderRadius: BorderRadius.circular(30),
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Colors.yellow.shade100.withOpacity(0.8),
-                Colors.green.shade100.withOpacity(0.8),
-              ],
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+          child: Container(
+            width: isTablet
+                ? (screenWidth * 0.65).clamp(420.0, 560.0)
+                : (screenWidth * 0.88).clamp(280.0, 420.0),
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.9),
+              borderRadius: BorderRadius.circular(30),
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.yellow.shade100.withOpacity(0.8),
+                  Colors.green.shade100.withOpacity(0.8),
+                ],
+              ),
             ),
-          ),
-          child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [

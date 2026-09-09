@@ -1,46 +1,117 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
-import 'package:little_kids_ai/features/game/poster_question_selection_screen.dart';
+import 'package:little_kids_ai/features/game/subscription_screen.dart';
 
-class CategorySelectionScreen extends StatefulWidget {
-  final String gameTitle;
-  const CategorySelectionScreen({super.key, required this.gameTitle});
+class PosterQuestionSelectionScreen extends StatefulWidget {
+  final String categoryTitle;
+
+  const PosterQuestionSelectionScreen({
+    super.key,
+    required this.categoryTitle,
+  });
 
   @override
-  State<CategorySelectionScreen> createState() => _CategorySelectionScreenState();
+  State<PosterQuestionSelectionScreen> createState() => _PosterQuestionSelectionScreenState();
 }
 
-class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
-  final List<Map<String, dynamic>> categories = [
-    {'title': 'Transportation', 'image': 'https://picsum.photos/400/400?random=11'},
-    {'title': 'Forests & Animals', 'image': 'https://picsum.photos/400/400?random=12'},
-    {'title': 'Human Body', 'image': 'https://picsum.photos/400/400?random=13'},
-    {'title': 'Earth and World', 'image': 'https://picsum.photos/400/400?random=14'},
-    {'title': 'Ask Your Question', 'isSpecial': true},
-    {'title': 'Women Heroes', 'image': 'https://picsum.photos/400/400?random=15'},
-    {'title': 'Science', 'image': 'https://picsum.photos/400/400?random=16'},
-    {'title': 'Festivals', 'image': 'https://picsum.photos/400/400?random=17'},
-    {'title': 'Community Helpers', 'image': 'https://picsum.photos/400/400?random=18'},
-    {'title': 'Feelings', 'image': 'https://picsum.photos/400/400?random=19'},
-  ];
-
+class _PosterQuestionSelectionScreenState extends State<PosterQuestionSelectionScreen> {
   late PageController _pageController;
   double _currentPage = 2.0;
+
+  late List<Map<String, dynamic>> _questions;
+
+  final Map<String, List<Map<String, dynamic>>> _categoryQuestions = {
+    'Human Body': [
+      {'title': 'How does the heart work?', 'image': 'https://picsum.photos/400/400?random=131'},
+      {'title': 'Why do we need sleep?', 'image': 'https://picsum.photos/400/400?random=132'},
+      {'title': 'How do bones stay strong?', 'image': 'https://picsum.photos/400/400?random=133'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'What makes us taste food?', 'image': 'https://picsum.photos/400/400?random=134'},
+      {'title': 'How does the brain think?', 'image': 'https://picsum.photos/400/400?random=135'},
+    ],
+    'Science': [
+      {'title': 'Why is the sky blue?', 'image': 'https://picsum.photos/400/400?random=161'},
+      {'title': 'How do volcanoes erupt?', 'image': 'https://picsum.photos/400/400?random=162'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'What are stars made of?', 'image': 'https://picsum.photos/400/400?random=163'},
+      {'title': 'How does electricity work?', 'image': 'https://picsum.photos/400/400?random=164'},
+      {'title': 'Why does ice float?', 'image': 'https://picsum.photos/400/400?random=165'},
+    ],
+    'Forests & Animals': [
+      {'title': 'Why do lions roar?', 'image': 'https://picsum.photos/400/400?random=121'},
+      {'title': 'How do birds fly?', 'image': 'https://picsum.photos/400/400?random=122'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'Why do chameleons change color?', 'image': 'https://picsum.photos/400/400?random=123'},
+      {'title': 'How do trees breathe?', 'image': 'https://picsum.photos/400/400?random=124'},
+      {'title': 'What do sea turtles eat?', 'image': 'https://picsum.photos/400/400?random=125'},
+    ],
+    'Earth and World': [
+      {'title': 'Why does it rain?', 'image': 'https://picsum.photos/400/400?random=141'},
+      {'title': 'How are mountains formed?', 'image': 'https://picsum.photos/400/400?random=142'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'Why is the ocean salty?', 'image': 'https://picsum.photos/400/400?random=143'},
+      {'title': 'How big is the universe?', 'image': 'https://picsum.photos/400/400?random=144'},
+    ],
+    'Transportation': [
+      {'title': 'How do airplanes stay in the air?', 'image': 'https://picsum.photos/400/400?random=111'},
+      {'title': 'How fast can bullet trains go?', 'image': 'https://picsum.photos/400/400?random=112'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'How do rockets reach space?', 'image': 'https://picsum.photos/400/400?random=113'},
+      {'title': 'How do submarines dive deep?', 'image': 'https://picsum.photos/400/400?random=114'},
+    ],
+    'Community Helpers': [
+      {'title': 'What do firefighters do?', 'image': 'https://picsum.photos/400/400?random=181'},
+      {'title': 'How do doctors heal people?', 'image': 'https://picsum.photos/400/400?random=182'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'How do architects build houses?', 'image': 'https://picsum.photos/400/400?random=183'},
+      {'title': 'What does an astronaut study?', 'image': 'https://picsum.photos/400/400?random=184'},
+    ],
+    'Women Heroes': [
+      {'title': 'Marie Curie & Science', 'image': 'https://picsum.photos/400/400?random=151'},
+      {'title': 'Amelia Earhart & Aviation', 'image': 'https://picsum.photos/400/400?random=152'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'Rosa Parks & Courage', 'image': 'https://picsum.photos/400/400?random=153'},
+      {'title': 'Ada Lovelace & Coding', 'image': 'https://picsum.photos/400/400?random=154'},
+    ],
+    'Festivals': [
+      {'title': 'Why do we celebrate Diwali?', 'image': 'https://picsum.photos/400/400?random=171'},
+      {'title': 'Traditions of Christmas', 'image': 'https://picsum.photos/400/400?random=172'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'Colors of Holi', 'image': 'https://picsum.photos/400/400?random=173'},
+      {'title': 'Lantern Festival Wonders', 'image': 'https://picsum.photos/400/400?random=174'},
+    ],
+    'Feelings': [
+      {'title': 'Why do we feel happy?', 'image': 'https://picsum.photos/400/400?random=191'},
+      {'title': 'How to handle feeling angry', 'image': 'https://picsum.photos/400/400?random=192'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'What does courage feel like?', 'image': 'https://picsum.photos/400/400?random=193'},
+      {'title': 'Why it is okay to be sad', 'image': 'https://picsum.photos/400/400?random=194'},
+    ],
+  };
 
   @override
   void initState() {
     super.initState();
-    const double viewportFraction = 0.185;
+    _questions = _categoryQuestions[widget.categoryTitle] ?? [
+      {'title': 'What makes things grow?', 'image': 'https://picsum.photos/400/400?random=201'},
+      {'title': 'How do stars shine?', 'image': 'https://picsum.photos/400/400?random=202'},
+      {'title': 'Ask Your Question', 'isSpecial': true},
+      {'title': 'Why do we dream?', 'image': 'https://picsum.photos/400/400?random=203'},
+      {'title': 'How do magnets work?', 'image': 'https://picsum.photos/400/400?random=204'},
+    ];
+
+    final initial = (_questions.length / 2).floor();
+    _currentPage = initial.toDouble();
     _pageController = PageController(
-      initialPage: 2,
-      viewportFraction: viewportFraction,
+      initialPage: initial,
+      viewportFraction: 0.185,
     );
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 2.0;
+          _currentPage = _pageController.page ?? initial.toDouble();
         });
       }
     });
@@ -50,6 +121,21 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  void _onCardTapped(int index) {
+    if ((_currentPage - index).abs() < 0.45) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+      );
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    }
   }
 
   @override
@@ -73,7 +159,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
 
                     return PageView.builder(
                       controller: _pageController,
-                      itemCount: categories.length,
+                      itemCount: _questions.length,
                       physics: const BouncingScrollPhysics(),
                       padEnds: true,
                       clipBehavior: Clip.none,
@@ -103,25 +189,8 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                                     height: itemHeight,
                                     child: GestureDetector(
                                       behavior: HitTestBehavior.opaque,
-                                      onTap: () {
-                                        if (isSelected) {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (_) => PosterQuestionSelectionScreen(
-                                                categoryTitle: categories[index]['title'] ?? 'Science',
-                                              ),
-                                            ),
-                                          );
-                                        } else {
-                                          _pageController.animateToPage(
-                                            index,
-                                            duration: const Duration(milliseconds: 350),
-                                            curve: Curves.easeOutCubic,
-                                          );
-                                        }
-                                      },
-                                      child: _buildCategoryCard(categories[index], isSelected),
+                                      onTap: () => _onCardTapped(index),
+                                      child: _buildCard(_questions[index], isSelected),
                                     ),
                                   ),
                                 ),
@@ -152,7 +221,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 60),
               child: Text(
-                'What kind of question should we learn about today?',
+                'Pick a poster question about ${widget.categoryTitle}!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                   fontSize: 23,
@@ -169,7 +238,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
               child: Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF80CBC4).withOpacity(0.5),
+                  color: const Color(0xFF80CBC4).withValues(alpha: 0.5),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(Icons.close, color: Colors.black54, size: 24),
@@ -181,9 +250,9 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     );
   }
 
-  Widget _buildCategoryCard(Map<String, dynamic> category, bool isSelected) {
-    if (category['isSpecial'] == true) {
-      return _buildSpecialCard(category, isSelected);
+  Widget _buildCard(Map<String, dynamic> item, bool isSelected) {
+    if (item['isSpecial'] == true) {
+      return _buildSpecialCard(item, isSelected);
     }
 
     return Container(
@@ -193,7 +262,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
+            color: Colors.black.withValues(alpha: isSelected ? 0.22 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -206,7 +275,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                category['image'],
+                item['image'] ?? 'https://picsum.photos/400/400',
                 fit: BoxFit.cover,
                 width: double.infinity,
                 alignment: Alignment.center,
@@ -223,14 +292,15 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              category['title'],
+              item['title'] ?? '',
               textAlign: TextAlign.center,
-              maxLines: 1,
+              maxLines: 2,
               overflow: TextOverflow.ellipsis,
               style: GoogleFonts.nunito(
-                fontSize: isSelected ? 15 : 13.5,
+                fontSize: isSelected ? 14 : 12.5,
                 fontWeight: FontWeight.w800,
                 color: const Color(0xFF1E293B),
+                height: 1.15,
               ),
             ),
           ),
@@ -239,7 +309,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     );
   }
 
-  Widget _buildSpecialCard(Map<String, dynamic> category, bool isSelected) {
+  Widget _buildSpecialCard(Map<String, dynamic> item, bool isSelected) {
     return Container(
       padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
       decoration: BoxDecoration(
@@ -247,7 +317,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
+            color: Colors.black.withValues(alpha: isSelected ? 0.22 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -262,7 +332,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
               child: Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
-                  color: Color(0xFF95DBAC), // Green card color #95dbac
+                  color: Color(0xFF95DBAC),
                 ),
                 child: Stack(
                   children: [
@@ -283,7 +353,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                           Container(
                             padding: const EdgeInsets.all(12),
                             decoration: const BoxDecoration(
-                              color: Color(0xFFFFD54F), // Golden yellow mic
+                              color: Color(0xFFFFD54F),
                               shape: BoxShape.circle,
                             ),
                             child: const Icon(Icons.mic, color: Colors.white, size: 28),
@@ -312,7 +382,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              category['title'],
+              item['title'] ?? 'Ask Your Question',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

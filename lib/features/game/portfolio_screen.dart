@@ -1,6 +1,9 @@
 import 'package:little_kids_ai/core/common_imports.dart';
+import 'package:little_kids_ai/features/game/game_main_hub_screen.dart';
+import 'package:little_kids_ai/features/game/game_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 import 'package:little_kids_ai/features/game/child_canvas_portfolio_screen.dart';
+import 'package:little_kids_ai/features/game/widgets/add_friend_dialog.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -32,69 +35,73 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   Widget build(BuildContext context) {
     return GameBackground(
       backgroundImage: 'assets/images/hills_background_clean.png',
-      child: Stack(
-        children: [
-          // Main Content List
-          Positioned.fill(
-            child: ListView(
-              padding: const EdgeInsets.only(top: 10, bottom: 24),
-              children: [
-                // Top Row (Contest & Portfolio card)
-                _buildTopRow(),
-                const SizedBox(height: 10),
-
-                // Categories Bar with Star Dividers
-                _buildCategoryBar(),
-                const SizedBox(height: 12),
-
-                // Child Header Row
-                _buildUserCreationsSection(),
-                const SizedBox(height: 8),
-
-                // Child Creations Horizontal Cards
-                _buildCreationsHorizontalList(),
-                const SizedBox(height: 16),
-
-                // Friends Header Row
-                _buildFriendsSection(),
-                const SizedBox(height: 8),
-
-                // Friends Creations Horizontal Cards
-                _buildFriendsHorizontalList(),
-              ],
-            ),
-          ),
-
-          // Top Right Close Button
-          Positioned(
-            top: 10,
-            right: 18,
-            child: GestureDetector(
-              onTap: () => Navigator.pop(context),
-              child: Image.asset(
-                'assets/images/src_assets_icons_btn_cross.png',
-                width: 36,
-                height: 36,
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF80CBC4).withOpacity(0.75),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
+      child: SafeArea(
+        child: Column(
+          children: [
+            // Dedicated Top Close Button Bar
+            Padding(
+              padding: const EdgeInsets.only(top: 8, right: 18, bottom: 4),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: GestureDetector(
+                  onTap: () => Navigator.pop(context),
+                  child: Image.asset(
+                    'assets/images/src_assets_icons_btn_cross.png',
+                    width: 36,
+                    height: 36,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF80CBC4).withOpacity(0.75),
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.08),
+                            blurRadius: 4,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
                       ),
-                    ],
+                      child: const Icon(Icons.close, color: Colors.black87, size: 24),
+                    ),
                   ),
-                  child: const Icon(Icons.close, color: Colors.black87, size: 24),
                 ),
               ),
             ),
-          ),
-        ],
+
+            // Main Content List
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.only(top: 2, bottom: 24),
+                children: [
+                  // Top Row (Contest & Portfolio card)
+                  _buildTopRow(),
+                  const SizedBox(height: 10),
+
+                  // Categories Bar with Star Dividers
+                  _buildCategoryBar(),
+                  const SizedBox(height: 12),
+
+                  // Child Header Row
+                  _buildUserCreationsSection(),
+                  const SizedBox(height: 8),
+
+                  // Child Creations Horizontal Cards
+                  _buildCreationsHorizontalList(),
+                  const SizedBox(height: 16),
+
+                  // Friends Header Row
+                  _buildFriendsSection(),
+                  const SizedBox(height: 8),
+
+                  // Friends Creations Horizontal Cards
+                  _buildFriendsHorizontalList(),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -107,7 +114,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           // Weekly Contest Banner
           Expanded(
             child: Container(
-              height: 74,
+              height: 84,
               padding: const EdgeInsets.symmetric(horizontal: 24),
               decoration: BoxDecoration(
                 color: Colors.white,
@@ -127,20 +134,25 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       'ENTER WEEKLY CONTEST TO WIN PRIZES',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.comicNeue(
-                        fontSize: 18,
+                        fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.italic,
+                        // fontStyle: FontStyle.italic,
                         color: const Color(0xFF1E293B),
                       ),
                     ),
                   ),
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFB2EBF2),
-                      shape: BoxShape.circle,
+                  GestureDetector(
+                    onTap: (){
+                      RouteNavigate().navigateToPush(context, GameScreen());
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFB2EBF2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.arrow_forward, color: Colors.black87, size: 20),
                     ),
-                    child: const Icon(Icons.arrow_forward, color: Colors.black87, size: 20),
                   ),
                 ],
               ),
@@ -156,9 +168,8 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
               );
             },
             child: Container(
-              width: 190,
-              height: 74,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 84,
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
@@ -170,44 +181,18 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   ),
                 ],
               ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Image.asset(
-                        'assets/images/src_assets_icons_my_portpolio.png',
-                        height: 34,
-                        width: 34,
-                        fit: BoxFit.contain,
-                        errorBuilder: (_, __, ___) => Image.asset(
-                          'assets/images/magic_image.png',
-                          height: 28,
-                          errorBuilder: (_, __, ___) => const Icon(Icons.star, color: Colors.amber, size: 24),
-                        ),
-                      ),
-                      Text(
-                        'My portfolio',
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF00ACC1),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const Icon(
-                    Icons.arrow_forward_ios_rounded,
-                    color: Color(0xFFFFB74D),
-                    size: 26,
-                  ),
-                ],
+              child:  Image.asset(
+                'assets/images/src_assets_icons_port_my_next.png',
+                height: 42,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Color(0xFFFFB74D),
+                  size: 34,
+                ),
               ),
             ),
           ),
-          const SizedBox(width: 46), // Space for close button
         ],
       ),
     );
@@ -299,38 +284,41 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           ),
           const Spacer(),
           // Share with friends button
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-            decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF0284C7), width: 1.5),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Row(
-              children: [
-                Text(
-                  'Share with friends',
-                  style: GoogleFonts.comicNeue(
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF0284C7),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Image.asset(
-                  'assets/images/src_assets_icons_share_icon.png',
-                  width: 22,
-                  height: 22,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFF43F5E),
-                      shape: BoxShape.circle,
+          GestureDetector(
+            onTap: () => AddFriendDialog.show(context),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFF0284C7), width: 1.5),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Row(
+                children: [
+                  Text(
+                    'Share with friends',
+                    style: GoogleFonts.comicNeue(
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF0284C7),
                     ),
-                    child: const Icon(Icons.send_rounded, color: Colors.white, size: 12),
                   ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Image.asset(
+                    'assets/images/src_assets_icons_share_icon.png',
+                    width: 22,
+                    height: 22,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFF43F5E),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.send_rounded, color: Colors.white, size: 12),
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
           const SizedBox(width: 14),
@@ -438,19 +426,22 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
           const Spacer(),
-          Image.asset(
-            'assets/images/src_assets_icons_add_friend.png',
-            width: 30,
-            height: 30,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE0F2FE),
-                shape: BoxShape.circle,
-                border: Border.all(color: const Color(0xFF0284C7), width: 1.5),
+          GestureDetector(
+            onTap: () => AddFriendDialog.show(context),
+            child: Image.asset(
+              'assets/images/src_assets_icons_add_friend.png',
+              width: 32,
+              height: 32,
+              fit: BoxFit.contain,
+              errorBuilder: (_, __, ___) => Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE0F2FE),
+                  shape: BoxShape.circle,
+                  border: Border.all(color: const Color(0xFF0284C7), width: 1.5),
+                ),
+                child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0284C7), size: 18),
               ),
-              child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0284C7), size: 18),
             ),
           ),
           const SizedBox(width: 14),

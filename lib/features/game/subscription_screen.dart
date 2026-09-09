@@ -1,10 +1,7 @@
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 import 'package:little_kids_ai/features/game/game_screen.dart';
-
-import 'package:little_kids_ai/core/common_imports.dart';
-import 'package:little_kids_ai/features/game/widgets/game_background.dart';
-import 'package:little_kids_ai/features/game/game_screen.dart';
+import 'package:little_kids_ai/widgets/common/app_web_view_screen.dart';
 
 class SubscriptionScreen extends StatefulWidget {
   const SubscriptionScreen({super.key});
@@ -14,105 +11,67 @@ class SubscriptionScreen extends StatefulWidget {
 }
 
 class _SubscriptionScreenState extends State<SubscriptionScreen> {
-  int _selectedPlanIndex = 0; // 0: Monthly ($5.99), 1: Annually ($44.99)
+  int _selectedPlanIndex = 0; // 0: Monthly (INR 590), 1: Annually (INR 4400)
 
   @override
   Widget build(BuildContext context) {
     return GameBackground(
-      backgroundImage: 'assets/images/landscape_background_clean.png',
-      child: Center(
+      backgroundImage: 'assets/images/src_assets_background_litto_back.png',
+      child: Align(
+        alignment: Alignment.bottomCenter,
         child: Container(
-          width: MediaQuery.of(context).size.width * 0.76,
-          margin: const EdgeInsets.symmetric(vertical: 16),
+          width: MediaQuery.of(context).size.width * 0.60,
+          margin: const EdgeInsets.only(top: 10),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
             gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
               colors: [
-                Color(0xFFFEFCE8), // Soft warm cream
-                Color(0xFFDCFCE7), // Soft pastel mint green
+                Color(0xFFEEFBD5), // Soft pastel lime/cream
+                Color(0xFFD6F9C7), // Light fresh green
+                Color(0xFFC0F4DA), // Soft pastel mint
               ],
             ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.18),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+                blurRadius: 18,
+                offset: const Offset(0, -3),
               ),
             ],
           ),
           child: Stack(
             children: [
-              // Top-Right Close Button
-              Positioned(
-                top: 12,
-                right: 14,
-                child: GestureDetector(
-                  onTap: () => Navigator.pop(context),
-                  child: Image.asset(
-                    'assets/images/src_assets_icons_btn_cross.png',
-                    width: 34,
-                    height: 34,
-                    fit: BoxFit.contain,
-                    errorBuilder: (_, __, ___) => Container(
-                      padding: const EdgeInsets.all(4),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.06),
-                      ),
-                      child: const Icon(Icons.close, color: Colors.black87, size: 24),
-                    ),
-                  ),
-                ),
-              ),
-
+              // Scrollable card content
               SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 20.0),
+                padding: const EdgeInsets.fromLTRB(24.0, 10.0, 24.0, 14.0),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    // Title
-                    Text(
-                      'All in one creative outlet',
-                      style: GoogleFonts.comicNeue(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        fontStyle: FontStyle.italic,
-                        color: const Color(0xFF1E293B),
+                    // Top drag handle
+                    Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF94A3B8).withOpacity(0.5),
+                        borderRadius: BorderRadius.circular(2),
                       ),
                     ),
                     const SizedBox(height: 8),
 
-                    // Free Plan Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
-                        border: Border.all(color: const Color(0xFF60A5FA), width: 1.2),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'Free Plan: Daily one game free',
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF2563EB),
-                        ),
+                    // Title
+                    Text(
+                      'Subscription Plans',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.nunito(
+                        fontSize: 21,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF111827),
                       ),
                     ),
                     const SizedBox(height: 12),
-
-                    // Section Heading
-                    Text(
-                      'Subscription Plans',
-                      style: GoogleFonts.comicNeue(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E293B),
-                      ),
-                    ),
-                    const SizedBox(height: 14),
 
                     // Two Plan Cards
                     Row(
@@ -121,14 +80,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         _buildPlanCard(
                           index: 0,
                           title: 'Billed Monthly',
-                          price: '\$5.99',
+                          price: 'INR 590',
                           isSelected: _selectedPlanIndex == 0,
                         ),
-                        const SizedBox(width: 20),
+                        const SizedBox(width: 14),
                         _buildPlanCard(
                           index: 1,
                           title: 'Billed Annually',
-                          price: '\$44.99',
+                          price: 'INR 4400',
                           discount: '60% OFF',
                           isSelected: _selectedPlanIndex == 1,
                         ),
@@ -138,16 +97,26 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
                     // Feature Bullets
                     Text(
-                      'Create unlimited creative projects\nUpto 3 kids per family included\nNo ads, No other upsells',
+                      'Create unlimited creative projects',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.comicNeue(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        height: 1.35,
-                        color: const Color(0xFF334155),
+                      style: GoogleFonts.nunito(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF111827),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 3),
+                    Text(
+                      'Upto 3 kids per family included\nNo ads, No other upsells',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.nunito(
+                        fontSize: 13.5,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3,
+                        color: const Color(0xFF1F2937),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
 
                     // Start Button (CTA)
                     GestureDetector(
@@ -156,7 +125,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           SnackBar(
                             content: Text(
                               'Starting 7-Day Free Trial...',
-                              style: GoogleFonts.comicNeue(fontSize: 16, fontWeight: FontWeight.bold),
+                              style: GoogleFonts.nunito(fontSize: 15, fontWeight: FontWeight.bold),
                             ),
                             backgroundColor: const Color(0xFF2563EB),
                             duration: const Duration(seconds: 1),
@@ -170,18 +139,156 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                       },
                       child: _buildStartButton(),
                     ),
-                    const SizedBox(height: 10),
+                    const SizedBox(height: 8),
 
                     // Footer Cancel Subtext
                     Text(
                       'Cancel anytime by going to app store settings',
-                      style: GoogleFonts.comicNeue(
-                        fontSize: 12,
-                        color: const Color(0xFF64748B),
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.nunito(
+                        fontSize: 11.5,
+                        color: const Color(0xFF374151),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
+                    const SizedBox(height: 8),
+
+                    // 3 Links: Restore Purchase, Terms of Service, Privacy Policy
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        GestureDetector(
+                          onTap: () {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Restoring previous purchases...'),
+                                duration: Duration(seconds: 2),
+                              ),
+                            );
+                          },
+                          child: Text(
+                            'Restore Purchase',
+                            style: GoogleFonts.nunito(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF64748B),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        GestureDetector(
+                          onTap: () {
+                            AppWebViewScreen.open(
+                              context,
+                              url: 'https://www.littlelit.ai/terms-of-service',
+                            );
+                          },
+                          child: Text(
+                            'Terms of Service',
+                            style: GoogleFonts.nunito(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF64748B),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        GestureDetector(
+                          onTap: () {
+                            AppWebViewScreen.open(
+                              context,
+                              url: 'https://www.littlelit.ai/privacy-policy',
+                            );
+                          },
+                          child: Text(
+                            'Privacy Policy',
+                            style: GoogleFonts.nunito(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: const Color(0xFF64748B),
+                              decoration: TextDecoration.underline,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Legal Terms text
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '(1) At the end of 7 day free trial, you will be on paid subscription plan. Your card will be charged the subscription fees (monthly or annual)',
+                            style: GoogleFonts.nunito(
+                              fontSize: 10,
+                              height: 1.3,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '(2) During the 7 day free trial, you can cancel anytime and you will not be charged, and converted to our free plan.',
+                            style: GoogleFonts.nunito(
+                              fontSize: 10,
+                              height: 1.3,
+                              fontWeight: FontWeight.w700,
+                              color: const Color(0xFF1E293B),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          GestureDetector(
+                            onTap: () {
+                              AppWebViewScreen.open(
+                                context,
+                                url: 'https://support.google.com/googleplay/answer/7018481?hl=en&co=GENIE.Platform%3DAndroid',
+                              );
+                            },
+                            child: Text(
+                              'How to Cancel Subscription',
+                              style: GoogleFonts.nunito(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF0284C7),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
+                ),
+              ),
+
+              // Top-Right Close Button
+              Positioned(
+                top: 8,
+                right: 8,
+                child: GestureDetector(
+                  onTap: () {
+                    if (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    } else {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => const GameScreen()),
+                      );
+                    }
+                  },
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    padding: const EdgeInsets.all(8.0),
+                    child: const Icon(
+                      Icons.close,
+                      color: Color(0xFF1E293B),
+                      size: 28,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -201,14 +308,14 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedPlanIndex = index),
       child: Container(
-        width: 175,
-        height: 95,
+        width: 154,
+        height: 88,
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isSelected ? const Color(0xFF22C55E) : Colors.transparent,
-            width: 3.0,
+            color: isSelected ? const Color(0xFF4ADE80) : Colors.transparent,
+            width: 3.5,
           ),
           boxShadow: [
             BoxShadow(
@@ -226,20 +333,19 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 children: [
                   Text(
                     title,
-                    style: GoogleFonts.comicNeue(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      fontStyle: FontStyle.italic,
-                      color: const Color(0xFF334155),
+                    style: GoogleFonts.nunito(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: const Color(0xFF1F2937),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   Text(
                     price,
-                    style: GoogleFonts.comicNeue(
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF0F172A),
+                    style: GoogleFonts.nunito(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF111827),
                     ),
                   ),
                 ],
@@ -251,22 +357,22 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                 right: 0,
                 child: Image.asset(
                   'assets/images/src_assets_icons_60_discount.png',
-                  height: 28,
+                  height: 24,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: const BoxDecoration(
                       color: Color(0xFF22C55E),
                       borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                        bottomRight: Radius.circular(13),
+                        topLeft: Radius.circular(8),
+                        bottomRight: Radius.circular(10),
                       ),
                     ),
                     child: Text(
                       discount,
                       style: const TextStyle(
                         color: Colors.white,
-                        fontSize: 10,
+                        fontSize: 9,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -281,44 +387,37 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
 
   Widget _buildStartButton() {
     return Container(
-      width: 260,
+      width: 220,
       padding: const EdgeInsets.symmetric(vertical: 8),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(32),
+        color: const Color(0xFF7CB5F9),
+        borderRadius: BorderRadius.circular(28),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.35),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: const Color(0xFF3B82F6).withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
           ),
         ],
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFF60A5FA),
-            Color(0xFF2563EB),
-          ],
-        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             'Start',
-            style: GoogleFonts.comicNeue(
+            style: GoogleFonts.nunito(
               color: Colors.white,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontSize: 19,
+              fontWeight: FontWeight.w900,
               height: 1.1,
             ),
           ),
           Text(
             '7 Day Free Trial',
-            style: GoogleFonts.comicNeue(
+            style: GoogleFonts.nunito(
               color: Colors.white,
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
               height: 1.1,
             ),
           ),

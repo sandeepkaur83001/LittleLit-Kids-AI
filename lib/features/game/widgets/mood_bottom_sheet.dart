@@ -49,70 +49,83 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
 
     return Container(
       width: screenWidth,
-      height: screenHeight * 0.54,
-      decoration: BoxDecoration(
+      height: screenHeight * 0.60,
+      decoration: const BoxDecoration(
         color: Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-        image: const DecorationImage(
-          image: AssetImage('assets/images/src_assets_images_mood_back.png'),
-          fit: BoxFit.cover,
-          alignment: Alignment.bottomCenter,
-          opacity: 0.95,
-        ),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.20),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+            color: Colors.black26,
+            blurRadius: 18,
+            offset: Offset(0, -4),
           ),
         ],
       ),
-      child: SafeArea(
-        top: false,
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
-            // Top Drag Handle
-            Container(
-              width: 50,
-              height: 4,
-              decoration: BoxDecoration(
-                color: const Color(0xFF333333),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 12),
-
-            // Header Banner Text
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                "Groovy time! Pick how do you feel and let's play some music that'll make you smile",
-                textAlign: TextAlign.center,
-                style: GoogleFonts.comicNeue(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.black,
-                  letterSpacing: 0.2,
+      clipBehavior: Clip.antiAlias,
+      child: Column(
+        children: [
+          // Top White Strip with Only the Drag Handle
+          Container(
+            width: double.infinity,
+            color: Colors.white,
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Center(
+              child: Container(
+                width: 50,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF333333),
+                  borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 40),
+          ),
 
-            // 6 Mood Emotion Characters Row across Full Width
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: List.generate(_moods.length, (index) {
-                  return _buildMoodItem(index);
-                }),
+          // Mood Background Area with Header Text and Characters
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                image: DecorationImage(
+                  image: AssetImage('assets/images/src_assets_images_mood_back.png'),
+                  fit: BoxFit.cover,
+                  alignment: Alignment.bottomCenter,
+                ),
+              ),
+              padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+              child: Column(
+                children: [
+                  // Header Title Text on Mood Background
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Text(
+                      "Groovy time! Pick how do you feel and let's play some music that'll make you smile",
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.comicNeue(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.black,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                  ),
+                  // const Spacer(),
+                  const SizedBox(height: 40),
+
+                  // 6 Mood Emotion Characters Row
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: List.generate(_moods.length, (index) {
+                      return _buildMoodItem(index);
+                    }),
+                  ),
+                  const SizedBox(height: 4),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -138,52 +151,56 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
               // Staggered pulsing zoom in/out effect
               final double pulseOffset = (index * 0.25) % 1.0;
               final double progress = (_zoomController.value + pulseOffset) % 1.0;
-              final double idleScale = 0.94 + (0.08 * (1.0 - (progress - 0.5).abs() * 2.0));
-              final double scale = isSelected ? 1.15 : (hasSelection ? 0.92 : idleScale);
+              final double bounceFactor = 1.0 - (progress - 0.5).abs() * 2.0;
+              final double scale = isSelected
+                  ? 1.10 + (0.12 * bounceFactor) // Selected character continues to pop up and pulse actively
+                  : (hasSelection
+                      ? 0.90 + (0.05 * bounceFactor) // Other characters continue subtle breathing
+                      : 0.94 + (0.08 * bounceFactor)); // Default idle breathing
 
-              return Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Emotion Label with dynamic tilt/rotation
-                  Transform.rotate(
-                    angle: rotation,
-                    child: Text(
-                      mood['label'] as String,
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.comicNeue(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.black,
-                        letterSpacing: 0.4,
+              return Transform.scale(
+                scale: scale,
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Emotion Label with dynamic tilt/rotation
+                    Transform.rotate(
+                      angle: rotation,
+                      child: Text(
+                        mood['label'] as String,
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.comicNeue(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                          letterSpacing: 0.4,
+                        ),
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 6),
+                    const SizedBox(height: 4),
 
-                  // Character Image with compact height & zoom animation
-                  Transform.scale(
-                    scale: scale,
-                    alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      height: 86,
+                    // Character Image with compact height
+                    SizedBox(
+                      height: 68,
                       child: Image.asset(
                         mood['image'] as String,
                         fit: BoxFit.contain,
                         alignment: Alignment.bottomCenter,
                         errorBuilder: (context, error, stackTrace) => Container(
-                          height: 80,
-                          width: 45,
+                          height: 60,
+                          width: 40,
                           decoration: BoxDecoration(
                             color: Colors.teal.shade200,
                             borderRadius: BorderRadius.circular(20),
                           ),
-                          child: const Icon(Icons.music_note, color: Colors.white, size: 28),
+                          child: const Icon(Icons.music_note, color: Colors.white, size: 24),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               );
             },
           ),

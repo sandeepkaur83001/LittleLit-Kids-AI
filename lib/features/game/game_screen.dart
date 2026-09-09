@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 import 'package:little_kids_ai/features/game/settings_screen.dart';
@@ -13,8 +14,10 @@ import 'package:little_kids_ai/features/game/magic_art_screen.dart';
 import 'package:little_kids_ai/features/game/coloring_art_screen.dart';
 import 'package:little_kids_ai/features/game/coloring_theme_selection_screen.dart';
 import 'package:little_kids_ai/features/game/puzzle_game_screen.dart';
-
+import 'package:little_kids_ai/features/game/puzzle_theme_selection_screen.dart';
 import 'package:little_kids_ai/features/game/design_apparel_selection_screen.dart';
+import 'package:little_kids_ai/features/game/build_project_category_selection_screen.dart';
+import 'package:little_kids_ai/features/game/voice_help_screen.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -27,13 +30,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
   late AnimationController _magicGlowController;
 
   final List<Map<String, dynamic>> games = [
-    {'title': 'Make Posters', 'image': 'assets/images/make_posters.png', 'screen': const MagicArtScreen()},
+    {'title': 'Make Posters', 'image': 'assets/images/make_posters.png', 'screen': const CategorySelectionScreen(gameTitle: 'Make Posters')},
     {'title': 'Write Storybook', 'image': 'assets/images/write_storybooks.png', 'screen': const BookCreationScreen()},
-    {'title': 'Design Puzzles', 'image': 'assets/images/design_puzzels.png', 'screen': const PuzzleGameScreen()},
+    {'title': 'Design Puzzles', 'image': 'assets/images/design_puzzels.png', 'screen': const PuzzleThemeSelectionScreen()},
     {'title': 'Design Stuff', 'image': 'assets/images/design_stuff.png', 'screen': const DesignApparelSelectionScreen()},
     {'title': 'Create Songs', 'image': 'assets/images/create_songs.png', 'screen': const TuneSelectionScreen()},
     {'title': 'Coloring Art', 'image': 'assets/images/coloring_arts.png', 'screen': const ColoringThemeSelectionScreen()},
-    {'title': 'Build Projects', 'image': 'assets/images/build_projects.png', 'screen': const PuzzleGameScreen()},
+    {'title': 'Build Projects', 'image': 'assets/images/build_projects.png', 'screen': const BuildProjectCategorySelectionScreen()},
   ];
 
   late PageController _pageController;
@@ -47,9 +50,10 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       duration: const Duration(milliseconds: 900),
     )..repeat(reverse: true);
 
+    const double viewportFraction = 0.185;
     _pageController = PageController(
       initialPage: 2,
-      viewportFraction: 0.23,
+      viewportFraction: viewportFraction,
     );
 
     _pageController.addListener(() {
@@ -87,8 +91,12 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
             child: LayoutBuilder(
               builder: (context, constraints) {
                 final double width = constraints.maxWidth;
-                final double slotWidth = width * 0.23;
-                final double itemWidth = slotWidth - 6.0;
+                // Always dynamically use _pageController.viewportFraction
+                final double fraction = _pageController.viewportFraction;
+                final double slotWidth = width * fraction;
+                // +1.0 prevents any sub-pixel gap on high-DPI displays
+                final double itemWidth = slotWidth + 1.0;
+                final double itemHeight = math.min(itemWidth * 1.38, math.min(constraints.maxHeight * 0.80, 280.0));
 
                 return PageView.builder(
                   controller: _pageController,
@@ -107,10 +115,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                           pageOffset = (_currentPage - index);
                         }
 
-                        // Smooth curve for scale, elevation, and pop
-                        final double progress = (1.0 - (pageOffset.abs() * 0.75)).clamp(0.0, 1.0);
-                        final double scale = 0.88 + (progress * 0.18);
-                        final double yOffset = -20.0 * progress;
+                        // Base scale is 1.0 for all inactive cards (zero gap between cards)
+                        // Selected card smoothly scales to 1.18 and pops up
+                        final double progress = (1.0 - (pageOffset.abs() * 0.9)).clamp(0.0, 1.0);
+                        final double scale = 1.0 + (progress * 0.18);
+                        final double yOffset = -16.0 * progress;
                         final bool isSelected = pageOffset.abs() < 0.45;
 
                         return Center(
@@ -120,7 +129,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                               scale: scale,
                               child: SizedBox(
                                 width: itemWidth,
-                                height: constraints.maxHeight * 0.82,
+                                height: itemHeight,
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
                                   onTap: () {
@@ -198,7 +207,10 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 _buildCircularGlassButton(
                   imagePath: 'assets/images/help_icon.png',
                   onTap: () {
-                    showDialog(context: context, builder: (_) => const VoiceHelpOverlay());
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const VoiceHelpScreen()),
+                    );
                   },
                 ),
               ],
@@ -232,13 +244,13 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                       ),
                       child: Image.asset(
                         'assets/images/src_assets_icons_magic_art.png',
-                        height: 72,
-                        width: 72,
+                        height: 52,
+                        width: 52,
                         fit: BoxFit.contain,
                         errorBuilder: (context, error, stackTrace) => Image.asset(
                           'assets/images/magic_image.png',
-                          height: 72,
-                          width: 72,
+                          height: 52,
+                          width: 52,
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -273,11 +285,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                     );
                   },
                   child: Container(
-                    padding: const EdgeInsets.all(8),
+                    padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
                       color: const Color(0xFFE1F5FE).withOpacity(0.85),
                       borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.2),
+                      // border: Border.all(color: Colors.white.withOpacity(0.8), width: 1.2),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.06),
@@ -331,16 +343,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
 
   Widget _buildGameCard(Map<String, dynamic> game, bool isSelected) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+      padding: const EdgeInsets.fromLTRB(6, 6, 6, 10),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.20 : 0.08),
-            blurRadius: isSelected ? 16 : 6,
-            spreadRadius: isSelected ? 1 : 0,
-            offset: Offset(0, isSelected ? 8 : 3),
+            color: Colors.black.withOpacity(isSelected ? 0.20 : 0.04),
+            blurRadius: isSelected ? 18 : 3,
+            spreadRadius: isSelected ? 2 : 0,
+            offset: Offset(0, isSelected ? 8 : 1),
           ),
         ],
       ),
@@ -348,11 +360,12 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
         children: [
           Expanded(
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(8),
               child: Image.asset(
                 game['image']!,
                 fit: BoxFit.cover,
                 width: double.infinity,
+                alignment: Alignment.center,
                 errorBuilder: (context, error, stackTrace) {
                   return Container(
                     color: Colors.grey[200],
@@ -363,16 +376,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
             ),
           ),
           Container(
-            padding: const EdgeInsets.only(top: 8, bottom: 2),
+            padding: const EdgeInsets.only(top: 8, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
               game['title'] ?? '',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.comicNeue(
-                fontSize: isSelected ? 17 : 15,
-                fontWeight: FontWeight.w900,
+              style: GoogleFonts.nunito(
+                fontSize: isSelected ? 15 : 13.5,
+                fontWeight: FontWeight.w800,
                 color: const Color(0xFF1E293B),
               ),
             ),

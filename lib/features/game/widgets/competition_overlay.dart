@@ -1,4 +1,5 @@
 import 'package:little_kids_ai/core/common_imports.dart';
+import 'package:little_kids_ai/features/game/weekly_competition_pick_one_screen.dart';
 
 class CompetitionOverlay extends StatelessWidget {
   const CompetitionOverlay({super.key});
@@ -106,7 +107,15 @@ class CompetitionOverlay extends StatelessWidget {
                     
                     // START Button
                     GestureDetector(
-                      onTap: () => Navigator.pop(context),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const WeeklyCompetitionPickOneScreen(),
+                          ),
+                        );
+                      },
                       child: Image.asset(
                         'assets/images/src_assets_icons_challange_start.png',
                         height: 75,

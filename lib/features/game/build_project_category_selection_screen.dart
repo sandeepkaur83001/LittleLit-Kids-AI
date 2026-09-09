@@ -1,95 +1,65 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
-import 'package:little_kids_ai/features/game/coloring_drawing_selection_screen.dart';
+import 'package:little_kids_ai/features/game/build_project_item_selection_screen.dart';
 
-class ColoringTheme {
-  final String title;
-  final String coverImage;
-  final List<DrawingItem> drawings;
-  final bool isSpecial;
-
-  ColoringTheme({
-    required this.title,
-    required this.coverImage,
-    required this.drawings,
-    this.isSpecial = false,
-  });
-}
-
-class ColoringThemeSelectionScreen extends StatefulWidget {
-  const ColoringThemeSelectionScreen({super.key});
+class BuildProjectCategorySelectionScreen extends StatefulWidget {
+  const BuildProjectCategorySelectionScreen({super.key});
 
   @override
-  State<ColoringThemeSelectionScreen> createState() => _ColoringThemeSelectionScreenState();
+  State<BuildProjectCategorySelectionScreen> createState() =>
+      _BuildProjectCategorySelectionScreenState();
 }
 
-class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScreen> with SingleTickerProviderStateMixin {
+class _BuildProjectCategorySelectionScreenState
+    extends State<BuildProjectCategorySelectionScreen>
+    with SingleTickerProviderStateMixin {
   late PageController _pageController;
-  double _currentPage = 3.0;
+  double _currentPage = 2.0;
 
   late AnimationController _floatController;
 
-  final List<ColoringTheme> _themes = [
-    ColoringTheme(
-      title: 'Farm',
-      coverImage: 'https://picsum.photos/400/400?random=41',
-      drawings: [
-        DrawingItem(title: 'Barn & Tractor', image: 'https://picsum.photos/400/400?random=411'),
-        DrawingItem(title: 'Cow & Calf', image: 'https://picsum.photos/400/400?random=412'),
-        DrawingItem(title: 'Rooster', image: 'https://picsum.photos/400/400?random=413'),
-        DrawingItem(title: 'Sheep Flock', image: 'https://picsum.photos/400/400?random=414'),
-      ],
-    ),
-    ColoringTheme(
-      title: 'Animal Kingdom',
-      coverImage: 'https://picsum.photos/400/400?random=42',
-      drawings: [
-        DrawingItem(title: 'Lion King', image: 'https://picsum.photos/400/400?random=421'),
-        DrawingItem(title: 'Elephant Family', image: 'https://picsum.photos/400/400?random=422'),
-        DrawingItem(title: 'Cheetah Run', image: 'https://picsum.photos/400/400?random=423'),
-        DrawingItem(title: 'Playful Monkey', image: 'https://picsum.photos/400/400?random=424'),
-      ],
-    ),
-    ColoringTheme(
-      title: 'Fruits & Vegetables',
-      coverImage: 'https://picsum.photos/400/400?random=43',
-      drawings: [
-        DrawingItem(title: 'Apple & Pear', image: 'https://picsum.photos/400/400?random=431'),
-        DrawingItem(title: 'Watermelon Party', image: 'https://picsum.photos/400/400?random=432'),
-        DrawingItem(title: 'Funny Carrot', image: 'https://picsum.photos/400/400?random=433'),
-        DrawingItem(title: 'Banana Bunch', image: 'https://picsum.photos/400/400?random=434'),
-      ],
-    ),
-    ColoringTheme(
-      title: 'Your theme',
-      coverImage: '',
-      isSpecial: true,
-      drawings: [
-        DrawingItem(title: 'Custom Sparkle', image: 'https://picsum.photos/400/400?random=441'),
-        DrawingItem(title: 'Magic Canvas', image: 'https://picsum.photos/400/400?random=442'),
-      ],
-    ),
-    ColoringTheme(
-      title: 'Christmas',
-      coverImage: 'https://picsum.photos/400/400?random=45',
-      drawings: [
-        DrawingItem(title: 'Snowy Cabin', image: 'https://picsum.photos/400/400?random=451'),
-        DrawingItem(title: 'Santa Claus', image: 'https://picsum.photos/400/400?random=452'),
-        DrawingItem(title: 'Reindeer Sleigh', image: 'https://picsum.photos/400/400?random=453'),
-        DrawingItem(title: 'Christmas Tree', image: 'https://picsum.photos/400/400?random=454'),
-      ],
-    ),
-    ColoringTheme(
-      title: 'Ocean Life',
-      coverImage: 'https://picsum.photos/400/400?random=46',
-      drawings: [
-        DrawingItem(title: 'Friendly Dolphin', image: 'https://picsum.photos/400/400?random=461'),
-        DrawingItem(title: 'Coral Reef', image: 'https://picsum.photos/400/400?random=462'),
-        DrawingItem(title: 'Whale Journey', image: 'https://picsum.photos/400/400?random=463'),
-        DrawingItem(title: 'Sea Turtle', image: 'https://picsum.photos/400/400?random=464'),
-      ],
-    ),
+  final List<Map<String, dynamic>> categories = [
+    {
+      'title': 'Robotics & Machines',
+      'image': 'https://picsum.photos/400/400?random=51',
+    },
+    {
+      'title': 'Science Experiments',
+      'image': 'https://picsum.photos/400/400?random=52',
+    },
+    {
+      'title': 'Craft & Play',
+      'image': 'https://picsum.photos/400/400?random=53',
+    },
+    {
+      'title': 'Kitchen Lab',
+      'image': 'https://picsum.photos/400/400?random=54',
+    },
+    {
+      'title': 'Your Theme',
+      'isSpecial': true,
+    },
+    {
+      'title': 'Nature Quest',
+      'image': 'https://picsum.photos/400/400?random=55',
+    },
+    {
+      'title': 'Clay & Sculpting',
+      'image': 'https://picsum.photos/400/400?random=56',
+    },
+    {
+      'title': 'Puppet Theater',
+      'image': 'https://picsum.photos/400/400?random=57',
+    },
+    {
+      'title': 'Space & Rockets',
+      'image': 'https://picsum.photos/400/400?random=58',
+    },
+    {
+      'title': 'Wooden Structures',
+      'image': 'https://picsum.photos/400/400?random=59',
+    },
   ];
 
   @override
@@ -100,16 +70,16 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
       duration: const Duration(milliseconds: 2200),
     )..repeat();
 
+    const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 3,
-      viewportFraction: 0.185,
+      initialPage: 2,
+      viewportFraction: viewportFraction,
     );
-    _currentPage = 3.0;
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 3.0;
+          _currentPage = _pageController.page ?? 2.0;
         });
       }
     });
@@ -122,13 +92,12 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
     super.dispose();
   }
 
-  void _onThemeSelected(ColoringTheme theme) {
+  void _onCategorySelected(int index) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ColoringDrawingSelectionScreen(
-          themeName: theme.title,
-          drawings: theme.drawings,
+        builder: (_) => BuildProjectItemSelectionScreen(
+          categoryTitle: categories[index]['title'] ?? 'Robotics & Machines',
         ),
       ),
     );
@@ -137,7 +106,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
   @override
   Widget build(BuildContext context) {
     return GameBackground(
-      backgroundImage: 'assets/images/src_assets_background_creative_back.png',
+      backgroundImage: 'assets/images/src_assets_background_litto_back.png',
       child: Stack(
         children: [
           Column(
@@ -155,7 +124,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
 
                     return PageView.builder(
                       controller: _pageController,
-                      itemCount: _themes.length,
+                      itemCount: categories.length,
                       physics: const BouncingScrollPhysics(),
                       padEnds: true,
                       clipBehavior: Clip.none,
@@ -165,12 +134,15 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                           builder: (context, child) {
                             double pageOffset = 0.0;
                             if (_pageController.position.haveDimensions) {
-                              pageOffset = (_pageController.page ?? _pageController.initialPage.toDouble()) - index;
+                              pageOffset = (_pageController.page ??
+                                      _pageController.initialPage.toDouble()) -
+                                  index;
                             } else {
                               pageOffset = (_currentPage - index);
                             }
 
-                            final double progress = (1.0 - (pageOffset.abs() * 0.9)).clamp(0.0, 1.0);
+                            final double progress =
+                                (1.0 - (pageOffset.abs() * 0.9)).clamp(0.0, 1.0);
                             final double scale = 1.0 + (progress * 0.18);
                             final double yOffset = -16.0 * progress;
                             final bool isSelected = pageOffset.abs() < 0.45;
@@ -187,16 +159,18 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                                       behavior: HitTestBehavior.opaque,
                                       onTap: () {
                                         if (isSelected) {
-                                          _onThemeSelected(_themes[index]);
+                                          _onCategorySelected(index);
                                         } else {
                                           _pageController.animateToPage(
                                             index,
-                                            duration: const Duration(milliseconds: 350),
+                                            duration:
+                                                const Duration(milliseconds: 350),
                                             curve: Curves.easeOutCubic,
                                           );
                                         }
                                       },
-                                      child: _buildThemeCard(_themes[index], isSelected),
+                                      child: _buildCategoryCard(
+                                          categories[index], isSelected),
                                     ),
                                   ),
                                 ),
@@ -213,18 +187,19 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
             ],
           ),
 
-          // Bottom Right Brushie Mascot GIF (Decreased size)
+          // Bottom Right Crafty Mascot
           Positioned(
             bottom: 6,
             right: 18,
             child: Image.asset(
-              'assets/images/src_assets_gifs_brushie.gif',
+              'assets/images/src_assets_icons_char_carfty.png',
               height: 138,
               fit: BoxFit.contain,
               errorBuilder: (_, __, ___) => Image.asset(
-                'assets/images/src_assets_icons_intro_brushie.png',
+                'assets/images/crafty.png',
                 height: 130,
                 fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => const SizedBox(),
               ),
             ),
           ),
@@ -241,7 +216,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // Left Animated Brushie Mascot Image (Increased size)
+            // Left Animated Crafty Mascot
             Positioned(
               left: 10,
               top: 14,
@@ -258,7 +233,6 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                   } else if (t < 0.70) {
                     // Phase 2: Moderate Vertical Shake Up & Down (0.28 -> 0.70)
                     final double p = (t - 0.28) / 0.42;
-                    // 4 gentle vertical shakes
                     final double verticalShake = math.sin(p * 4 * 2 * math.pi);
                     yOffset = -10.0 + (verticalShake * 3.0);
                   } else if (t < 0.88) {
@@ -276,10 +250,15 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                   );
                 },
                 child: Image.asset(
-                  'assets/images/src_assets_icons_intro_brushie.png',
+                  'assets/images/src_assets_icons_intro_crafty.png',
                   height: 82,
                   fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const SizedBox(),
+                  errorBuilder: (_, __, ___) => Image.asset(
+                    'assets/images/crafty.png',
+                    height: 82,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const SizedBox(),
+                  ),
                 ),
               ),
             ),
@@ -289,10 +268,10 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 90),
                 child: Text(
-                  'Pick a theme to begin',
+                  'What kind of project should we build today?',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.nunito(
-                    fontSize: 24,
+                    fontSize: 23,
                     fontWeight: FontWeight.w900,
                     color: const Color(0xFF111827),
                   ),
@@ -321,9 +300,9 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
     );
   }
 
-  Widget _buildThemeCard(ColoringTheme theme, bool isSelected) {
-    if (theme.isSpecial) {
-      return _buildSpecialThemeCard(theme, isSelected);
+  Widget _buildCategoryCard(Map<String, dynamic> category, bool isSelected) {
+    if (category['isSpecial'] == true) {
+      return _buildSpecialCard(category, isSelected);
     }
 
     return Container(
@@ -333,7 +312,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isSelected ? 0.22 : 0.04),
+            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -346,14 +325,16 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.network(
-                theme.coverImage,
+                category['image'],
                 fit: BoxFit.cover,
                 width: double.infinity,
                 alignment: Alignment.center,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.palette_rounded, size: 40, color: Colors.blue),
-                ),
+                errorBuilder: (context, error, stackTrace) {
+                  return Container(
+                    color: Colors.grey[200],
+                    child: const Icon(Icons.broken_image, color: Colors.grey),
+                  );
+                },
               ),
             ),
           ),
@@ -361,7 +342,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              theme.title,
+              category['title'],
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -377,7 +358,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
     );
   }
 
-  Widget _buildSpecialThemeCard(ColoringTheme theme, bool isSelected) {
+  Widget _buildSpecialCard(Map<String, dynamic> category, bool isSelected) {
     return Container(
       padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
       decoration: BoxDecoration(
@@ -385,7 +366,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
         borderRadius: BorderRadius.circular(10),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isSelected ? 0.22 : 0.04),
+            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
             blurRadius: isSelected ? 18 : 3,
             spreadRadius: isSelected ? 2 : 0,
             offset: Offset(0, isSelected ? 8 : 1),
@@ -450,7 +431,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              theme.title,
+              category['title'],
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -465,20 +446,4 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
       ),
     );
   }
-}
-
-class _SpeechBubbleTailPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()..color = Colors.white;
-    final path = Path()
-      ..moveTo(0, 0)
-      ..lineTo(size.width, 0)
-      ..lineTo(0, size.height)
-      ..close();
-    canvas.drawPath(path, paint);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

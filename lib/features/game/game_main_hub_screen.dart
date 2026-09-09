@@ -1,4 +1,5 @@
 import 'package:little_kids_ai/core/common_imports.dart';
+import 'package:little_kids_ai/features/game/portfolio_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 
 class GameMainHubScreen extends StatefulWidget {
@@ -103,28 +104,48 @@ class _GameMainHubScreenState extends State<GameMainHubScreen> {
             ),
           ),
           const SizedBox(width: 20),
-          Container(
-            width: 180,
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Column(
-              children: [
-                Image.asset(
-                  'assets/images/src_assets_icons_my_portpolio.png',
-                  height: 40,
-                  width: 40,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const Icon(Icons.palette, size: 40, color: Colors.blue),
-                ),
-                Text(
-                  'My Portfolio',
-                  style: GoogleFonts.comicNeue(fontWeight: FontWeight.bold),
-                ),
-                const Icon(Icons.arrow_right_alt, color: Colors.orange, size: 40),
-              ],
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) =>  PortfolioScreen()),
+              );
+            },
+            child: Container(
+              width: 190,
+              height: 74,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: Image.asset(
+                      'assets/images/src_assets_icons_my_portpolio.png',
+                      height: 58,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const Icon(Icons.palette, size: 40, color: Colors.blue),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Image.asset(
+                    'assets/images/src_assets_icons_port_my_next.png',
+                    height: 36,
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => const Icon(Icons.arrow_forward_rounded, color: Colors.orange, size: 32),
+                  ),
+                ],
+              ),
             ),
           ),
         ],

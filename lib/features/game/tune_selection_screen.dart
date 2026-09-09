@@ -1,4 +1,6 @@
 import 'package:little_kids_ai/core/common_imports.dart';
+import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:little_kids_ai/features/game/subscription_screen.dart';
 
 class TuneSelectionScreen extends StatefulWidget {
   const TuneSelectionScreen({super.key});
@@ -12,23 +14,28 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
     {'title': 'Twinkle Twinkle', 'id': '1'},
     {'title': 'Baby Shark', 'id': '2'},
     {'title': 'Mary Had a Little Lamb', 'id': '3'},
-    {'title': 'ABC Song', 'id': '4'},
+    {'title': 'Old MacDonald', 'id': '4'},
+    {'title': 'Wheels on the Bus', 'id': '5'},
+    {'title': 'Row Row Row Your Boat', 'id': '6'},
   ];
 
   late PageController _pageController;
-  double _currentPage = 0.0;
+  double _currentPage = 1.0;
+  String? _playingId;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(
-      initialPage: 0,
-      viewportFraction: 0.36,
+      initialPage: 1,
+      viewportFraction: 0.28,
     );
+    _currentPage = 1.0;
+
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 0.0;
+          _currentPage = _pageController.page ?? 1.0;
         });
       }
     });
@@ -40,110 +47,101 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
     super.dispose();
   }
 
+  void _onTuneCardTapped(int index) {
+    if ((_currentPage - index).abs() < 0.45) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+      );
+    } else {
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 350),
+        curve: Curves.easeOutCubic,
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFB3E5FC), // Light blue background
-      body: Stack(
+    return GameBackground(
+      backgroundImage: 'assets/images/src_assets_background_duck_back_ipad.png',
+      child: Stack(
         children: [
-          // Background decorative elements
-          Positioned(
-            top: -50,
-            right: -50,
-            child: Container(
-              width: 200,
-              height: 200,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-          Center(
-            child: Container(
-              width: MediaQuery.of(context).size.width * 0.6,
-              height: MediaQuery.of(context).size.width * 0.6,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-
           Column(
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 20),
+              // Top Title
               Center(
                 child: Text(
                   'Select a tune to begin',
-                  style: GoogleFonts.comicNeue(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                    color: const Color(0xFF333333),
+                  style: GoogleFonts.nunito(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: const Color(0xFF111827),
                   ),
                 ),
               ),
+
               Expanded(
                 child: Stack(
                   children: [
-                    // Duck Character
+                    // Duck Character on the bottom left
                     Positioned(
-                      bottom: 0,
-                      left: 0,
+                      bottom: 10,
+                      left: 10,
                       child: Image.asset(
                         'assets/images/duck_singer.png',
-                        height: MediaQuery.of(context).size.height * 0.7,
+                        height: MediaQuery.of(context).size.height * 0.58,
                         fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          'assets/images/duck_image.png',
+                          height: MediaQuery.of(context).size.height * 0.58,
+                          fit: BoxFit.contain,
+                        ),
                       ),
                     ),
 
-                    // Tunes Carousel with PageView.builder
+                    // Tunes Carousel
                     Align(
                       alignment: Alignment.centerRight,
                       child: SizedBox(
-                        height: 280,
-                        width: MediaQuery.of(context).size.width * 0.72,
-                        child: PageView.builder(
-                          controller: _pageController,
-                          itemCount: tunes.length,
-                          physics: const BouncingScrollPhysics(),
-                          padEnds: false,
-                          clipBehavior: Clip.none,
-                          itemBuilder: (context, index) {
-                            return AnimatedBuilder(
-                              animation: _pageController,
-                              builder: (context, child) {
-                                double pageOffset = 0.0;
-                                if (_pageController.position.haveDimensions) {
-                                  pageOffset = (_pageController.page ?? _pageController.initialPage.toDouble()) - index;
-                                } else {
-                                  pageOffset = (_currentPage - index);
-                                }
+                        height: 260,
+                        width: MediaQuery.of(context).size.width * 0.76,
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            return PageView.builder(
+                              controller: _pageController,
+                              itemCount: tunes.length,
+                              physics: const BouncingScrollPhysics(),
+                              padEnds: false,
+                              clipBehavior: Clip.none,
+                              itemBuilder: (context, index) {
+                                return AnimatedBuilder(
+                                  animation: _pageController,
+                                  builder: (context, child) {
+                                    double pageOffset = 0.0;
+                                    if (_pageController.position.haveDimensions) {
+                                      pageOffset = (_pageController.page ?? _pageController.initialPage.toDouble()) - index;
+                                    } else {
+                                      pageOffset = (_currentPage - index);
+                                    }
 
-                                final double progress = (1.0 - (pageOffset.abs() * 0.6)).clamp(0.0, 1.0);
-                                final double scale = 0.88 + (progress * 0.16);
-                                final bool isSelected = pageOffset.abs() < 0.45;
+                                    final double progress = (1.0 - (pageOffset.abs() * 0.8)).clamp(0.0, 1.0);
+                                    final double scale = 0.95 + (progress * 0.15);
+                                    final bool isSelected = pageOffset.abs() < 0.45;
 
-                                return Center(
-                                  child: Transform.scale(
-                                    scale: scale,
-                                    child: GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: () {
-                                        if (isSelected) {
-                                          // Play/Select tune
-                                        } else {
-                                          _pageController.animateToPage(
-                                            index,
-                                            duration: const Duration(milliseconds: 350),
-                                            curve: Curves.easeOutCubic,
-                                          );
-                                        }
-                                      },
-                                      child: _buildTuneCard(tunes[index], isSelected),
-                                    ),
-                                  ),
+                                    return Center(
+                                      child: Transform.scale(
+                                        scale: scale,
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: () => _onTuneCardTapped(index),
+                                          child: _buildTuneCard(tunes[index], isSelected),
+                                        ),
+                                      ),
+                                    );
+                                  },
                                 );
                               },
                             );
@@ -157,22 +155,26 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
             ],
           ),
 
-          // Close button
+          // Top-Right Close Button
           Positioned(
-            top: 20,
+            top: 16,
             right: 20,
             child: GestureDetector(
               onTap: () => Navigator.pop(context),
               child: Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(7),
                 decoration: const BoxDecoration(
-                  color: Color(0xFFFFD54F), // Yellow
+                  color: Color(0xFFFFD54F), // Yellow circle
                   shape: BoxShape.circle,
                   boxShadow: [
-                    BoxShadow(color: Colors.black26, blurRadius: 4, offset: Offset(0, 2))
+                    BoxShadow(
+                      color: Colors.black26,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
                   ],
                 ),
-                child: const Icon(Icons.close, color: Colors.black54, size: 30),
+                child: const Icon(Icons.close, color: Color(0xFF1E293B), size: 26),
               ),
             ),
           ),
@@ -182,71 +184,132 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
   }
 
   Widget _buildTuneCard(Map<String, String> tune, bool isSelected) {
+    final bool isPlaying = _playingId == tune['id'];
+
     return SizedBox(
-      width: 200,
+      width: 225,
+      height: 225,
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Outer decorative circle
-          Container(
-            width: 190,
-            height: 190,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(isSelected ? 0.4 : 0.2),
-              shape: BoxShape.circle,
+          // Outer Blue Layer Disc Asset (Full size)
+          Image.asset(
+            'assets/images/src_assets_icons_music_blue.png',
+            width: 220,
+            height: 220,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => Image.asset(
+              'assets/images/src_assets_icons_music_black_blue.png',
+              width: 220,
+              height: 220,
+              fit: BoxFit.contain,
             ),
           ),
-          // Main Black Circle
-          Container(
-            width: 160,
-            height: 160,
-            decoration: BoxDecoration(
-              color: Colors.black,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: isSelected ? const Color(0xFFFFD54F) : const Color(0xFFB3E5FC),
-                width: isSelected ? 6 : 8,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(isSelected ? 0.35 : 0.2),
-                  blurRadius: isSelected ? 14 : 8,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
+
+          // Inner Black Scalloped Circle Disc Asset (Smaller to reveal outer blue rings)
+          Image.asset(
+            'assets/images/src_assets_icons_music_black_circle.png',
+            width: 142,
+            height: 142,
+            fit: BoxFit.contain,
+            errorBuilder: (_, __, ___) => const SizedBox(),
+          ),
+
+          // Inner Content (Play/Stop button, Title, SELECT Button)
+          SizedBox(
+            width: 135,
+            height: 135,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.play_circle_fill, color: Colors.white, size: 50),
-                const SizedBox(height: 8),
+                // Play or Stop Icon
+                GestureDetector(
+                  onTap: () {
+                    setState(() {
+                      if (_playingId == tune['id']) {
+                        _playingId = null;
+                      } else {
+                        _playingId = tune['id'];
+                      }
+                    });
+                  },
+                  child: isPlaying
+                      ? Image.asset(
+                          'assets/images/src_assets_icons_music_blue_stop.png',
+                          width: 36,
+                          height: 36,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => Container(
+                            padding: const EdgeInsets.all(6),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFF38BDF8),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(Icons.stop_rounded, color: Colors.white, size: 20),
+                          ),
+                        )
+                      : Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          child: const Icon(
+                            Icons.play_arrow_rounded,
+                            color: Colors.white,
+                            size: 24,
+                          ),
+                        ),
+                ),
+                const SizedBox(height: 4),
+
+                // Tune Title
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
                   child: Text(
                     tune['title']!,
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.comicNeue(
+                    style: GoogleFonts.nunito(
                       color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      height: 1.1,
                     ),
                   ),
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFD54F),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'SELECT',
-                    style: GoogleFonts.comicNeue(
-                      color: Colors.black,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
+                const SizedBox(height: 5),
+
+                // SELECT Button -> Opens SubscriptionScreen
+                GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const SubscriptionScreen()),
+                    );
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD54F),
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.25),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Text(
+                      'SELECT',
+                      style: GoogleFonts.nunito(
+                        color: const Color(0xFF1E293B),
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ),

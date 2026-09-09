@@ -1,47 +1,53 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
-import 'package:little_kids_ai/features/game/design_theme_selection_screen.dart';
+import 'package:little_kids_ai/features/game/subscription_screen.dart';
 
-class DesignApparelSelectionScreen extends StatefulWidget {
-  const DesignApparelSelectionScreen({super.key});
+class WeeklyCompetitionPickOneScreen extends StatefulWidget {
+  const WeeklyCompetitionPickOneScreen({super.key});
 
   @override
-  State<DesignApparelSelectionScreen> createState() => _DesignApparelSelectionScreenState();
+  State<WeeklyCompetitionPickOneScreen> createState() => _WeeklyCompetitionPickOneScreenState();
 }
 
-class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScreen> {
+class _WeeklyCompetitionPickOneScreenState extends State<WeeklyCompetitionPickOneScreen> {
   late PageController _pageController;
   double _currentPage = 2.0;
 
-  final List<Map<String, dynamic>> _designCards = [
+  final List<Map<String, dynamic>> _templates = [
     {
-      'title': 'Design Shoes, Bottles, Hats',
-      'image': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+      'title': 'Rainbow Pastel',
+      'image': 'https://picsum.photos/400/400?random=111',
+      'color': const Color(0xFFFDE8F4),
+      'borderColor': const Color(0xFFF472B6),
     },
     {
-      'title': 'Decorate yummy cakes',
-      'image': 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=600&auto=format&fit=crop&q=80',
+      'title': 'Golden Glow',
+      'image': 'https://picsum.photos/400/400?random=112',
+      'color': const Color(0xFFFEF9C3),
+      'borderColor': const Color(0xFFFACC15),
     },
     {
-      'title': 'Make a fun card',
-      'image': 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600&auto=format&fit=crop&q=80',
+      'title': 'Holiday Festive',
+      'image': 'https://picsum.photos/400/400?random=113',
+      'color': const Color(0xFFDC2626),
+      'isSpecialHoliday': true,
     },
     {
-      'title': 'Design Tshirts n more',
-      'image': 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=600&auto=format&fit=crop&q=80',
+      'title': 'Party Balloons',
+      'image': 'https://picsum.photos/400/400?random=114',
+      'color': const Color(0xFF0284C7),
+      'isBalloon': true,
     },
     {
-      'title': 'Decorate Christmas Tree',
-      'image': 'https://images.unsplash.com/photo-1543258103-a62bdc069871?w=600&auto=format&fit=crop&q=80',
+      'title': 'Sunny Cream',
+      'image': 'https://picsum.photos/400/400?random=115',
+      'color': const Color(0xFFFEF3C7),
     },
     {
-      'title': 'Design cool backpacks',
-      'image': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
-    },
-    {
-      'title': 'Your idea',
-      'isSpecial': true,
+      'title': 'Sky Blue',
+      'image': 'https://picsum.photos/400/400?random=116',
+      'color': const Color(0xFFE0F2FE),
     },
   ];
 
@@ -70,14 +76,11 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
     super.dispose();
   }
 
-  void _onDesignCardSelected(Map<String, dynamic> card) {
+  void _onTemplateSelected(int index) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => DesignThemeSelectionScreen(
-          selectedDesignTitle: card['title'] ?? 'Make a fun card',
-          selectedDesignImage: card['image'],
-        ),
+        builder: (_) => const SubscriptionScreen(),
       ),
     );
   }
@@ -104,7 +107,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
 
                       return PageView.builder(
                         controller: _pageController,
-                        itemCount: _designCards.length,
+                        itemCount: _templates.length,
                         physics: const BouncingScrollPhysics(),
                         padEnds: true,
                         clipBehavior: Clip.none,
@@ -136,7 +139,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
                                         behavior: HitTestBehavior.opaque,
                                         onTap: () {
                                           if (isSelected) {
-                                            _onDesignCardSelected(_designCards[index]);
+                                            _onTemplateSelected(index);
                                           } else {
                                             _pageController.animateToPage(
                                               index,
@@ -145,7 +148,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
                                             );
                                           }
                                         },
-                                        child: _buildDesignCard(_designCards[index], isSelected),
+                                        child: _buildTemplateCard(_templates[index], isSelected),
                                       ),
                                     ),
                                   ),
@@ -214,7 +217,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 60),
               child: Text(
-                'What should we design today?',
+                'Pick one!',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.nunito(
                   fontSize: 26,
@@ -243,16 +246,12 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
     );
   }
 
-  Widget _buildDesignCard(Map<String, dynamic> item, bool isSelected) {
-    if (item['isSpecial'] == true) {
-      return _buildSpecialCard(item, isSelected);
-    }
-
+  Widget _buildTemplateCard(Map<String, dynamic> item, bool isSelected) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
@@ -262,130 +261,23 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
           ),
         ],
       ),
-      child: Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item['image'] ?? 'https://picsum.photos/400/400',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                alignment: Alignment.center,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  );
-                },
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(8),
+        child: Image.network(
+          item['image'] ?? 'https://picsum.photos/400/400',
+          fit: BoxFit.cover,
+          width: double.infinity,
+          height: double.infinity,
+          alignment: Alignment.center,
+          errorBuilder: (context, error, stackTrace) {
+            return Container(
+              color: item['color'] ?? const Color(0xFFF1F5F9),
+              child: const Center(
+                child: Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 40),
               ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
-            alignment: Alignment.center,
-            child: Text(
-              item['title'] ?? '',
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.nunito(
-                fontSize: isSelected ? 15 : 13.5,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF1E293B),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSpecialCard(Map<String, dynamic> item, bool isSelected) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
-            blurRadius: isSelected ? 18 : 3,
-            spreadRadius: isSelected ? 2 : 0,
-            offset: Offset(0, isSelected ? 8 : 1),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(8),
-              child: Container(
-                width: double.infinity,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF95DBAC),
-                ),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            'Type or Talk...',
-                            style: GoogleFonts.nunito(
-                              color: Colors.white,
-                              fontSize: 14,
-                              fontStyle: FontStyle.italic,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(
-                              color: Color(0xFFFFD54F),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(Icons.mic, color: Colors.white, size: 28),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 8,
-                      right: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(6),
-                        decoration: const BoxDecoration(
-                          color: Colors.white,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(Icons.arrow_forward, color: Color(0xFF95DBAC), size: 18),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
-            alignment: Alignment.center,
-            child: Text(
-              item['title'] ?? 'Your idea',
-              textAlign: TextAlign.center,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: GoogleFonts.nunito(
-                fontSize: isSelected ? 15 : 13.5,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF1E293B),
-              ),
-            ),
-          ),
-        ],
+            );
+          },
+        ),
       ),
     );
   }
