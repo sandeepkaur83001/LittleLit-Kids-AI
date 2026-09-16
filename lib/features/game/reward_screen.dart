@@ -15,32 +15,41 @@ class _RewardScreenState extends State<RewardScreen> {
   Widget build(BuildContext context) {
     return GameBackground(
       backgroundImage: "assets/images/landscape_background_clean.png",
+      useSafeArea: false,
       child: Column(
         children: [
           _buildTopBar(context),
-          const SizedBox(height: 20),
-          
+          const SizedBox(height: 16),
           Expanded(
             child: _buildMainContent(),
           ),
-          const SizedBox(height: 20),
         ],
       ),
     );
   }
 
   Widget _buildTopBar(BuildContext context) {
+    final topPadding = MediaQuery.of(context).padding.top;
+    final leftPadding = MediaQuery.of(context).padding.left;
+    final rightPadding = MediaQuery.of(context).padding.right;
+
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.lightBlueAccent.withOpacity(0.7)
+      width: double.infinity,
+      decoration: const BoxDecoration(
+        color: Color(0xFFBEE7F8),
       ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      padding: EdgeInsets.only(
+        top: topPadding > 0 ? topPadding + 4 : 8,
+        bottom: 8,
+        left: leftPadding > 0 ? leftPadding + 16 : 20,
+        right: rightPadding > 0 ? rightPadding + 16 : 20,
+      ),
       child: Row(
         children: [
           _buildTabButton('Sticker', const Color(0xFFFFB7B7), 0),
-          const SizedBox(width: 15),
+          const SizedBox(width: 14),
           _buildTabButton('Badge', const Color(0xFFFFE897), 1),
-          const SizedBox(width: 15),
+          const SizedBox(width: 14),
           _buildTabButton('Weekly\nWinner', const Color(0xFFC5E1A5), 2),
           const Spacer(),
           GestureDetector(
@@ -56,7 +65,7 @@ class _RewardScreenState extends State<RewardScreen> {
                   color: Colors.black.withOpacity(0.1),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.close, color: Colors.black54, size: 28),
+                child: const Icon(Icons.close, color: Colors.black54, size: 26),
               ),
             ),
           ),
@@ -66,26 +75,40 @@ class _RewardScreenState extends State<RewardScreen> {
   }
 
   Widget _buildTabButton(String label, Color color, int index) {
-    bool isSelected = _selectedTab == index;
+    final bool isSelected = _selectedTab == index;
+
     return GestureDetector(
       onTap: () => setState(() => _selectedTab = index),
       child: Container(
-        width: 100,
-        height: 100,
+        width: 76,
+        height: 76,
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: isSelected ? Border.all(color: Colors.black, width: 5) : null,
+          border: isSelected ? Border.all(color: Colors.black, width: 3.5) : null,
+          boxShadow: [
+            if (isSelected)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.12),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+          ],
         ),
         alignment: Alignment.center,
-        child: Text(
-          label,
-          textAlign: TextAlign.center,
-          style: GoogleFonts.comicNeue(
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-            height: 1.0,
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: GoogleFonts.comicNeue(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: Colors.black87,
+              height: 1.1,
+            ),
           ),
         ),
       ),
@@ -93,37 +116,39 @@ class _RewardScreenState extends State<RewardScreen> {
   }
 
   Widget _buildMainContent() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final double screenHeight = MediaQuery.of(context).size.height;
+
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 40),
+      margin: const EdgeInsets.symmetric(horizontal: 32),
       width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(20),
-        image: const DecorationImage(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        image: DecorationImage(
           image: AssetImage('assets/images/create_something_background.png'),
           fit: BoxFit.cover,
         ),
       ),
       child: Center(
         child: Container(
+          width: screenWidth * 0.60,
+          height: screenHeight * 0.60,
+          margin: const EdgeInsets.only(top: 40),
 
-          width: MediaQuery.of(context).size.width*0.75,
-          height: MediaQuery.of(context).size.height*0.7,
-          margin: const EdgeInsets.symmetric(horizontal: 60, vertical: 40),
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
           decoration: BoxDecoration(
-            color:  Colors.white, // Soft teal/cyan
-            borderRadius: BorderRadius.circular(15),
+            color: const Color(0xFFEFF8F7).withOpacity(0.95), // Soft pastel mint card
+            borderRadius: BorderRadius.circular(4),
           ),
-          child: Center(
-            child: Text(
-              'As soon as you create something it will show up here!',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.comicNeue(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-                color: Colors.black,
-              ),
+          alignment: Alignment.center,
+          child: Text(
+            'As soon as you create something\nit will show up here!',
+            textAlign: TextAlign.center,
+            style: GoogleFonts.comicNeue(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF0F172A),
+              height: 1.35,
             ),
           ),
         ),

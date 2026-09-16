@@ -72,24 +72,55 @@ class SharedManager {
     return result;
   }
 
-  // static Future<LoginModel?> getLoginData() async {
-  //   String? data = await getStringSharePreferences(SharedConstants.LOGIN_MODEL);
-  //   Globals.BearerToken = data != null ? (LoginModel.fromJson(jsonDecode(data)).data!.token ?? "") : null;
-  //   return data != null ? LoginModel.fromJson(jsonDecode(data)) : null;
-  // }
+  static Future<void> saveAuthData(AuthResponseModel authResponse) async {
+    if (authResponse.data?.accessToken != null && authResponse.data!.accessToken!.isNotEmpty) {
+      Globals.BearerToken = authResponse.data!.accessToken;
+      await setStringSharePreferences(SharedConstants.ACCESS_TOKEN, authResponse.data!.accessToken);
+    }
+    if (authResponse.data != null) {
+      Globals.currentUser = authResponse.data;
+      await setStringSharePreferences(
+        SharedConstants.USER_DATA,
+        jsonEncode(authResponse.data!.toJson()),
+      );
+    }
+  }
 
-  static Future<bool?> getToken() async {
-    // return true;
+  static Future<UserData?> getUserData() async {
+    if (Globals.currentUser != null) {
+      return Globals.currentUser;
+    }
+    String? data = await getStringSharePreferences(SharedConstants.USER_DATA);
+    if (data != null && data.isNotEmpty) {
+      try {
+        Globals.currentUser = UserData.fromJson(jsonDecode(data));
+        return Globals.currentUser;
+      } catch (e) {
+        CommonApiClass().normalPrintJson("Error decoding UserData: $e");
+      }
+    }
+    return null;
+  }
+
+  static Future<void> clearAuthData() async {
+    Globals.BearerToken = null;
+    Globals.currentUser = null;
+    await deleteSpecificSharePreference(SharedConstants.ACCESS_TOKEN);
+    await deleteSpecificSharePreference(SharedConstants.USER_DATA);
+    await deleteSpecificSharePreference(SharedConstants.LOGIN_MODEL);
+  }
+
+  static Future<bool> getToken() async {
     if (Globals.BearerToken != null && Globals.BearerToken!.isNotEmpty) {
       CommonApiClass().normalPrintJson("USER_BEARER_TOKEN  ${Globals.BearerToken}");
       return true;
     } else {
-      String? data = await getStringSharePreferences(SharedConstants.LOGIN_MODEL);
-      // Globals.BearerToken = data != null ? (LoginModel.fromJson(jsonDecode(data)).data!.token ?? "") : null;
-      // Globals.userIdRegister = data != null ? (LoginModel.fromJson(jsonDecode(data)).data?.user?.sId ?? "") : null;
+      String? token = await getStringSharePreferences(SharedConstants.ACCESS_TOKEN);
+      Globals.BearerToken = token;
+      await getUserData();
       CommonApiClass().normalPrintJson("USER_BEARER_TOKEN  ${Globals.BearerToken}");
 
-      return (Globals.BearerToken != null && Globals.BearerToken!.isNotEmpty) ? true : false;
+      return (Globals.BearerToken != null && Globals.BearerToken!.isNotEmpty);
     }
   }
 }

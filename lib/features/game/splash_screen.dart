@@ -3,6 +3,9 @@ import 'dart:async';
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/auth_choice_screen.dart';
 
+import 'package:little_kids_ai/features/game/game_screen.dart';
+import 'package:get/get.dart';
+
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
@@ -28,12 +31,31 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     _controller.forward();
 
-    Timer(const Duration(seconds: 3), () {
+    _navigateNext();
+  }
+
+  Future<void> _navigateNext() async {
+    await Future.delayed(const Duration(seconds: 3));
+    if (!mounted) return;
+
+    final authController = Get.find<AuthController>();
+    final isLoggedIn = await authController.checkAuthStatus();
+
+    if (!mounted) return;
+
+    if (isLoggedIn) {
+      // Also fetch latest profile in background
+      Get.find<ProfileController>().fetchProfile();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const GameScreen()),
+      );
+    } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const AuthChoiceScreen()),
       );
-    });
+    }
   }
 
   @override

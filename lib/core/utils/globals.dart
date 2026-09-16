@@ -5,6 +5,7 @@ import 'package:little_kids_ai/core/common_imports.dart';
 class Globals {
   static final navigatorKey = GlobalKey<NavigatorState>();
   static String? BearerToken;
+  static UserData? currentUser;
 
   static double height = 0.0;
   static double width = 0.0;

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
 
 class MoodBottomSheet extends StatefulWidget {
@@ -13,12 +13,12 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
   int? _selectedMoodIndex;
 
   final List<Map<String, dynamic>> _moods = const [
-    {'label': 'EXCITED', 'image': 'assets/images/excited.png', 'rotation': -0.22},
-    {'label': 'HAPPY', 'image': 'assets/images/happy.png', 'rotation': 0.0},
-    {'label': 'SILLY', 'image': 'assets/images/silly.png', 'rotation': 0.0},
-    {'label': 'TIRED', 'image': 'assets/images/tired.png', 'rotation': 0.0},
-    {'label': 'SAD', 'image': 'assets/images/sad.png', 'rotation': 0.0},
-    {'label': 'ANXIOUS', 'image': 'assets/images/anxious.png', 'rotation': 0.0},
+    {'id': 1, 'label': 'EXCITED', 'image': 'assets/images/excited.png', 'rotation': -0.22},
+    {'id': 2, 'label': 'HAPPY', 'image': 'assets/images/happy.png', 'rotation': 0.0},
+    {'id': 3, 'label': 'SILLY', 'image': 'assets/images/silly.png', 'rotation': 0.0},
+    {'id': 4, 'label': 'TIRED', 'image': 'assets/images/tired.png', 'rotation': 0.0},
+    {'id': 5, 'label': 'SAD', 'image': 'assets/images/sad.png', 'rotation': 0.0},
+    {'id': 6, 'label': 'ANXIOUS', 'image': 'assets/images/anxious.png', 'rotation': 0.0},
   ];
 
   @override
@@ -28,6 +28,18 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
       vsync: this,
       duration: const Duration(milliseconds: 1400),
     )..repeat(reverse: true);
+
+    _initSelectedMood();
+  }
+
+  void _initSelectedMood() {
+    final profileController = Get.find<ProfileController>();
+    profileController.fetchMoods();
+    final currentMoodId = profileController.userProfile.value?.moodId ??
+        profileController.selectedMood.value?.id;
+    if (currentMoodId != null && currentMoodId >= 1 && currentMoodId <= 6) {
+      _selectedMoodIndex = currentMoodId - 1;
+    }
   }
 
   @override
@@ -40,6 +52,19 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
     setState(() {
       _selectedMoodIndex = index;
     });
+
+    final moodId = (_moods[index]['id'] as int?) ?? (index + 1);
+    final profileController = Get.find<ProfileController>();
+    if (profileController.moodList.isNotEmpty) {
+      final matched = profileController.moodList.firstWhereOrNull((m) => m.id == moodId);
+      if (matched != null) {
+        profileController.selectedMood.value = matched;
+      }
+    }
+    profileController.updateProfile(
+      moodId: moodId,
+      showLoading: false,
+    );
   }
 
   @override
@@ -113,13 +138,22 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                   const SizedBox(height: 40),
 
                   // 6 Mood Emotion Characters Row
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: List.generate(_moods.length, (index) {
-                      return _buildMoodItem(index);
-                    }),
-                  ),
+                  Obx(() {
+                    final profileController = Get.find<ProfileController>();
+                    final apiMoods = profileController.moodList;
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: List.generate(_moods.length, (index) {
+                        final fallbackMood = _moods[index];
+                        final moodId = (fallbackMood['id'] as int?) ?? (index + 1);
+                        final MoodModel? apiMood = apiMoods.firstWhereOrNull((m) => m.id == moodId);
+
+                        return _buildMoodItem(index, fallbackMood, apiMood);
+                      }),
+                    );
+                  }),
                   const SizedBox(height: 4),
                 ],
               ),
@@ -130,12 +164,14 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
     );
   }
 
-  Widget _buildMoodItem(int index) {
-    final mood = _moods[index];
+  Widget _buildMoodItem(int index, Map<String, dynamic> fallbackMood, MoodModel? apiMood) {
     final bool isSelected = _selectedMoodIndex == index;
     final bool hasSelection = _selectedMoodIndex != null;
     final double itemOpacity = hasSelection ? (isSelected ? 1.0 : 0.35) : 1.0;
-    final double rotation = (mood['rotation'] as double?) ?? 0.0;
+    final double rotation = (fallbackMood['rotation'] as double?) ?? 0.0;
+    final String label = apiMood?.name?.toUpperCase() ?? (fallbackMood['label'] as String);
+    final String? iconUrl = apiMood?.iconUrl;
+    final String fallbackAsset = fallbackMood['image'] as String;
 
     return Expanded(
       child: GestureDetector(
@@ -169,7 +205,7 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                     Transform.rotate(
                       angle: rotation,
                       child: Text(
-                        mood['label'] as String,
+                        label,
                         textAlign: TextAlign.center,
                         style: GoogleFonts.comicNeue(
                           fontSize: 14,
@@ -181,23 +217,43 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                     ),
                     const SizedBox(height: 4),
 
-                    // Character Image with compact height
+                    // Character Image with compact height (API network image with local fallback)
                     SizedBox(
                       height: 68,
-                      child: Image.asset(
-                        mood['image'] as String,
-                        fit: BoxFit.contain,
-                        alignment: Alignment.bottomCenter,
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 60,
-                          width: 40,
-                          decoration: BoxDecoration(
-                            color: Colors.teal.shade200,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Icon(Icons.music_note, color: Colors.white, size: 24),
-                        ),
-                      ),
+                      child: (iconUrl != null && iconUrl.isNotEmpty)
+                          ? Image.network(
+                              iconUrl,
+                              fit: BoxFit.contain,
+                              alignment: Alignment.bottomCenter,
+                              errorBuilder: (context, error, stackTrace) => Image.asset(
+                                fallbackAsset,
+                                fit: BoxFit.contain,
+                                alignment: Alignment.bottomCenter,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  height: 60,
+                                  width: 40,
+                                  decoration: BoxDecoration(
+                                    color: Colors.teal.shade200,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+                                ),
+                              ),
+                            )
+                          : Image.asset(
+                              fallbackAsset,
+                              fit: BoxFit.contain,
+                              alignment: Alignment.bottomCenter,
+                              errorBuilder: (context, error, stackTrace) => Container(
+                                height: 60,
+                                width: 40,
+                                decoration: BoxDecoration(
+                                  color: Colors.teal.shade200,
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                                child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+                              ),
+                            ),
                     ),
                   ],
                 ),

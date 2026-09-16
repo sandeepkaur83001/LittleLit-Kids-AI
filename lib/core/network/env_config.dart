@@ -6,22 +6,22 @@ class EnvConfig {
   static String get baseUrl {
     switch (environment) {
       case Environment.dev:
-        return 'https://dev-api.example.com/';
+        return 'http://162.241.68.61/little_lit/api/v1';
       case Environment.staging:
-        return 'https://staging-api.example.com/';
+        return 'http://162.241.68.61/little_lit/api/v1';
       case Environment.prod:
-        return 'https://api.example.com/';
+        return 'http://162.241.68.61/little_lit/api/v1';
     }
   }
 
   static String get baseUrlPhoto {
     switch (environment) {
       case Environment.dev:
-        return 'https://dev-api.example.com/photos/';
+        return 'http://162.241.68.61/little_lit/public/';
       case Environment.staging:
-        return 'https://staging-api.example.com/photos/';
+        return 'http://162.241.68.61/little_lit/public/';
       case Environment.prod:
-        return 'https://api.example.com/photos/';
+        return 'http://162.241.68.61/little_lit/public/';
     }
   }
 

@@ -1,12 +1,14 @@
+import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:little_kids_ai/features/profile/controllers/profile_controller.dart';
 
 class ChildCanvasPortfolioScreen extends StatelessWidget {
-  final String childName;
+  final String? childName;
 
   const ChildCanvasPortfolioScreen({
     super.key,
-    this.childName = 'Test',
+    this.childName,
   });
 
   final List<Map<String, dynamic>> _skills = const [
@@ -120,26 +122,20 @@ class ChildCanvasPortfolioScreen extends StatelessWidget {
   }
 
   Widget _buildRibbonHeader() {
-    return SizedBox(
-      height: 48,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Image.asset(
-            'assets/images/src_assets_icons_port_name.png',
-            height: 44,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF29B6F6),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: const SizedBox(width: 140),
-            ),
-          ),
-          Text(
-            "$childName 's Canvas",
+    final effectiveName = (childName != null && childName!.isNotEmpty)
+        ? childName!
+        : (Globals.currentUser?.childNickname ??
+            Get.find<ProfileController>().userProfile.value?.childNickname ??
+            'Child');
+
+    return Center(
+      child: ClipPath(
+        clipper: const RibbonClipper(notchWidth: 16),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 8),
+          color: const Color(0xFF38BDF8),
+          child: Text(
+            "$effectiveName's Canvas",
             style: GoogleFonts.comicNeue(
               fontSize: 20,
               fontWeight: FontWeight.bold,
@@ -153,7 +149,7 @@ class ChildCanvasPortfolioScreen extends StatelessWidget {
               ],
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -302,4 +298,26 @@ class ChildCanvasPortfolioScreen extends StatelessWidget {
       ],
     );
   }
+}
+
+class RibbonClipper extends CustomClipper<Path> {
+  final double notchWidth;
+
+  const RibbonClipper({this.notchWidth = 16.0});
+
+  @override
+  Path getClip(Size size) {
+    final path = Path();
+    path.moveTo(0, 0);
+    path.lineTo(size.width, 0);
+    path.lineTo(size.width - notchWidth, size.height / 2);
+    path.lineTo(size.width, size.height);
+    path.lineTo(0, size.height);
+    path.lineTo(notchWidth, size.height / 2);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(covariant CustomClipper<Path> oldClipper) => false;
 }

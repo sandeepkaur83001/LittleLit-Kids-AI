@@ -237,10 +237,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.transparent,
-                        border: Border.all(
-                          color: Colors.white,
-                          width: 0.5,
-                        ),
+
                       ),
                       child: Image.asset(
                         'assets/images/src_assets_icons_magic_art.png',

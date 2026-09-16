@@ -22,16 +22,12 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
         child: Container(
           width: MediaQuery.of(context).size.width * 0.60,
           margin: const EdgeInsets.only(top: 10),
+          clipBehavior: Clip.antiAlias,
           decoration: BoxDecoration(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-            gradient: const LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                Color(0xFFEEFBD5), // Soft pastel lime/cream
-                Color(0xFFD6F9C7), // Light fresh green
-                Color(0xFFC0F4DA), // Soft pastel mint
-              ],
+            image: const DecorationImage(
+              image: AssetImage('assets/images/src_assets_background_home_page.png'),
+              fit: BoxFit.cover,
             ),
             boxShadow: [
               BoxShadow(
@@ -59,14 +55,45 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
+                    const SizedBox(height: 6),
+
+                    // Top Title
+                    Text(
+                      'All in one creative outlet',
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.nunito(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFF111827),
+                      ),
+                    ),
                     const SizedBox(height: 8),
 
-                    // Title
+                    // Free Plan Pill / Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: const Color(0xFF38BDF8), width: 1.2),
+                      ),
+                      child: Text(
+                        'Free Plan: Daily one game free',
+                        style: GoogleFonts.nunito(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Section Heading
                     Text(
                       'Subscription Plans',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.nunito(
-                        fontSize: 21,
+                        fontSize: 18,
                         fontWeight: FontWeight.w900,
                         color: const Color(0xFF111827),
                       ),
@@ -181,7 +208,7 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
                           onTap: () {
                             AppWebViewScreen.open(
                               context,
-                              url: 'https://www.littlelit.ai/terms-of-service',
+                              url: AppConstants.TERMS_URL,
                             );
                           },
                           child: Text(
@@ -386,42 +413,47 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   }
 
   Widget _buildStartButton() {
-    return Container(
-      width: 220,
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      decoration: BoxDecoration(
-        color: const Color(0xFF7CB5F9),
-        borderRadius: BorderRadius.circular(28),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF3B82F6).withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Start',
-            style: GoogleFonts.nunito(
-              color: Colors.white,
-              fontSize: 19,
-              fontWeight: FontWeight.w900,
-              height: 1.1,
+    return Image.asset(
+      'assets/images/src_assets_icons_start_trial.png',
+      height: 48,
+      fit: BoxFit.contain,
+      errorBuilder: (_, __, ___) => Container(
+        width: 220,
+        padding: const EdgeInsets.symmetric(vertical: 8),
+        decoration: BoxDecoration(
+          color: const Color(0xFF7CB5F9),
+          borderRadius: BorderRadius.circular(28),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF3B82F6).withOpacity(0.3),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
             ),
-          ),
-          Text(
-            '7 Day Free Trial',
-            style: GoogleFonts.nunito(
-              color: Colors.white,
-              fontSize: 15,
-              fontWeight: FontWeight.w800,
-              height: 1.1,
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              'Start',
+              style: GoogleFonts.nunito(
+                color: Colors.white,
+                fontSize: 19,
+                fontWeight: FontWeight.w900,
+                height: 1.1,
+              ),
             ),
-          ),
-        ],
+            Text(
+              '7 Day Free Trial',
+              style: GoogleFonts.nunito(
+                color: Colors.white,
+                fontSize: 15,
+                fontWeight: FontWeight.w800,
+                height: 1.1,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

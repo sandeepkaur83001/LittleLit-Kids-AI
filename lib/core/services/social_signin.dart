@@ -12,7 +12,15 @@ import '../constants/app_constants.dart';
 import '../network/common_api_class.dart';
 
 class SocialSignIn {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  FirebaseAuth? get _auth {
+    try {
+      return FirebaseAuth.instance;
+    } catch (e) {
+      debugPrint("FirebaseAuth instance error: $e");
+      return null;
+    }
+  }
+
   static final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
 
   static Future<void> initializeGoogleSignIn() async {
@@ -39,8 +47,11 @@ class SocialSignIn {
         idToken: auth.idToken,
       );
 
+      final authInstance = _auth;
+      if (authInstance == null) return null;
+
       final UserCredential userCredential =
-      await _auth.signInWithCredential(credential);
+          await authInstance.signInWithCredential(credential);
 
       return userCredential.user;
     } catch (e) {
@@ -61,7 +72,7 @@ class SocialSignIn {
   Future<void> signOutWithGoogle() async {
     try {
       await _googleSignIn.signOut();
-      await _auth.signOut();
+      await _auth?.signOut();
     } catch (e) {
       debugPrint("Error during Google sign-out: $e");
     }
@@ -69,7 +80,7 @@ class SocialSignIn {
 
   Future<void> signOut() async {
     try {
-      await _auth.signOut();
+      await _auth?.signOut();
     } catch (e) {
       CommonApiClass().normalPrintJson(e.toString());
     }
@@ -86,8 +97,10 @@ class SocialSignIn {
         final OAuthCredential facebookAuthCredential =
         FacebookAuthProvider.credential(accessToken.tokenString);
 
+        final authInstance = _auth;
+        if (authInstance == null) return null;
         UserCredential userCredential =
-        await _auth.signInWithCredential(facebookAuthCredential);
+            await authInstance.signInWithCredential(facebookAuthCredential);
         return userCredential.user;
       } else {
         debugPrint("Facebook login failed: ${loginResult.status}");
@@ -107,7 +120,7 @@ class SocialSignIn {
   Future<void> signOutWithFacebook() async {
     try {
       await FacebookAuth.instance.logOut();
-      await _auth.signOut();
+      await _auth?.signOut();
       debugPrint('User signed out from Facebook');
     } catch (e) {
       debugPrint('Error signing out from Facebook: $e');
@@ -128,8 +141,11 @@ class SocialSignIn {
         accessToken: appleCredential.authorizationCode,
       );
 
+      final authInstance = _auth;
+      if (authInstance == null) return null;
+
       UserCredential userCredential =
-      await _auth.signInWithCredential(oauthCredential);
+          await authInstance.signInWithCredential(oauthCredential);
 
       // Apple only provides fullName on the first sign-in.
       // We can update the Firebase user profile if name is available.

@@ -1,19 +1,16 @@
 import 'package:flutter/cupertino.dart';
+import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
+import 'package:little_kids_ai/core/services/background_music_service.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 
-class MusicSettingsScreen extends StatefulWidget {
+class MusicSettingsScreen extends StatelessWidget {
   const MusicSettingsScreen({super.key});
 
   @override
-  State<MusicSettingsScreen> createState() => _MusicSettingsScreenState();
-}
-
-class _MusicSettingsScreenState extends State<MusicSettingsScreen> {
-  bool _isMusicEnabled = true;
-
-  @override
   Widget build(BuildContext context) {
+    final musicService = Get.find<BackgroundMusicService>();
+
     return GameBackground(
       backgroundImage: 'assets/images/landscape_background_clean.png',
       showBackButton: true,
@@ -66,14 +63,14 @@ class _MusicSettingsScreenState extends State<MusicSettingsScreen> {
                           ),
                         ],
                       ),
-                      CupertinoSwitch(
-                        value: _isMusicEnabled,
-                        activeColor: const Color(0xFF2E78C7),
-                        onChanged: (val) {
-                          setState(() {
-                            _isMusicEnabled = val;
-                          });
-                        },
+                      Obx(
+                        () => CupertinoSwitch(
+                          value: musicService.isMusicEnabled.value,
+                          activeColor: const Color(0xFF2E78C7),
+                          onChanged: (val) {
+                            musicService.setMusicEnabled(val);
+                          },
+                        ),
                       ),
                     ],
                   ),

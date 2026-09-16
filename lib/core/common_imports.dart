@@ -59,6 +59,17 @@ export 'package:little_kids_ai/widgets/common/sub_tab.dart';
 export 'package:little_kids_ai/widgets/common/network_image_view.dart';
 export 'package:little_kids_ai/widgets/common/empty_state_widget.dart';
 
+// Models
+export 'package:little_kids_ai/models/base_model.dart';
+export 'package:little_kids_ai/models/user_model.dart';
+export 'package:little_kids_ai/models/mood_model.dart';
+
+// Features - Auth & Profile
+export 'package:little_kids_ai/features/auth/services/auth_api_service.dart';
+export 'package:little_kids_ai/features/auth/controllers/auth_controller.dart';
+export 'package:little_kids_ai/features/profile/services/profile_api_service.dart';
+export 'package:little_kids_ai/features/profile/controllers/profile_controller.dart';
+
 // Routes
 export 'package:little_kids_ai/routes/route_navigate.dart';
 

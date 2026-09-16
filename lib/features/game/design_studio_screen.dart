@@ -11,6 +11,20 @@ class PlacedPatch {
   PlacedPatch({required this.position, required this.widget, required this.label});
 }
 
+class ApparelItem {
+  final String title;
+  final String? image;
+  final bool isShirt;
+  final Color color;
+
+  const ApparelItem({
+    required this.title,
+    this.image,
+    this.isShirt = true,
+    this.color = Colors.white,
+  });
+}
+
 class DesignStudioScreen extends StatefulWidget {
   final ApparelItem item;
 

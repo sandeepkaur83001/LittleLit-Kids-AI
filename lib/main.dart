@@ -1,3 +1,4 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/services.dart';
 import 'package:little_kids_ai/features/game/splash_screen.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
@@ -14,6 +15,25 @@ void main() async {
 
   // Set full screen mode for the game
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+  // Initialize Firebase
+  try {
+    await Firebase.initializeApp(
+      options: const FirebaseOptions(
+        apiKey: AppConstants.FIREBASE_API_KEY,
+        appId: AppConstants.FIREBASE_APP_ID,
+        messagingSenderId: AppConstants.FIREBASE_MESSAGING_SENDER_ID,
+        projectId: AppConstants.FIREBASE_PROJECT_ID,
+        storageBucket: AppConstants.FIREBASE_STORAGE_BUCKET,
+      ),
+    );
+  } catch (e) {
+    try {
+      await Firebase.initializeApp();
+    } catch (e) {
+      debugPrint("Firebase init warning: $e");
+    }
+  }
 
   DependencyInjection.init();
   await DeviceInfoUtil.init();

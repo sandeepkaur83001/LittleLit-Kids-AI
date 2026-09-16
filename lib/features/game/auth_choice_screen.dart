@@ -1,14 +1,18 @@
+import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
+import 'package:little_kids_ai/features/auth/widgets/sign_in_dialog.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 import 'package:little_kids_ai/features/game/profile_setup_screen.dart';
-import 'package:little_kids_ai/features/game/game_screen.dart';
 
 class AuthChoiceScreen extends StatelessWidget {
   const AuthChoiceScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authController = Get.find<AuthController>();
+
     return GameBackground(
+      backgroundImage: 'assets/images/src_assets_background_splash_back.png',
       child: Center(
         child: SingleChildScrollView(
           child: Container(
@@ -16,12 +20,12 @@ class AuthChoiceScreen extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 40),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(40),
-              gradient: LinearGradient(
+              gradient: const LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 colors: [
-                  const Color(0xFFE0F58E), // Light lime green (matches image top)
-                  const Color(0xFF8FE6E1), // Light cyan/blue (matches image bottom)
+                  Color(0xFFE0F58E), // Light lime green
+                  Color(0xFF8FE6E1), // Light cyan/blue
                 ],
               ),
             ),
@@ -37,17 +41,16 @@ class AuthChoiceScreen extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 30),
-                _buildAuthButton(
+                Obx(() => _buildAuthButton(
                   iconPath: 'assets/images/src_assets_images_google.png',
-                  text: 'Sign up with Google',
+                  text: authController.isLoading.value ? 'Signing in...' : 'Sign up with Google',
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => const ProfileSetupScreen()),
-                    );
+                    if (!authController.isLoading.value) {
+                      authController.signInWithGoogle(context: context);
+                    }
                   },
                   isGoogle: true,
-                ),
+                )),
                 const SizedBox(height: 15),
                 _buildAuthButton(
                   iconPath: 'assets/images/src_assets_images_email.png',
@@ -61,12 +64,7 @@ class AuthChoiceScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 25),
                 GestureDetector(
-                  onTap: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => const GameScreen()),
-                    );
-                  },
+                  onTap: () => SignInDialog.show(context),
                   child: RichText(
                     text: TextSpan(
                       style: GoogleFonts.comicNeue(

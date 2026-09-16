@@ -1,7 +1,9 @@
+import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 import 'package:little_kids_ai/features/game/subscription_screen.dart';
 import 'package:little_kids_ai/features/game/edit_child_profile_screen.dart';
+import 'package:little_kids_ai/features/profile/controllers/profile_controller.dart';
 
 class ChildProfilesScreen extends StatefulWidget {
   const ChildProfilesScreen({super.key});
@@ -11,37 +13,30 @@ class ChildProfilesScreen extends StatefulWidget {
 }
 
 class _ChildProfilesScreenState extends State<ChildProfilesScreen> {
-  final List<Map<String, dynamic>> _profiles = [
-    {
-      'name': 'Test',
-      'age': '14',
-      'grade': 'Grade 4',
-      'neurodivergent': false,
-    },
-  ];
+  final ProfileController _profileController = Get.find<ProfileController>();
 
-  void _openEditProfileScreen({int? index}) async {
-    final bool isEditing = index != null;
+  @override
+  void initState() {
+    super.initState();
+    _profileController.fetchProfile();
+  }
+
+  void _openEditProfileScreen({ChildModel? child}) async {
     final result = await Navigator.push<Map<String, dynamic>>(
       context,
       MaterialPageRoute(
         builder: (_) => EditChildProfileScreen(
-          initialName: isEditing ? (_profiles[index]['name'] ?? '') : '',
-          initialAge: isEditing ? (_profiles[index]['age']?.toString() ?? '') : '',
-          initialGrade: isEditing ? (_profiles[index]['grade'] ?? 'Grade 4') : 'Grade 4',
-          initialNeurodivergent: isEditing ? (_profiles[index]['neurodivergent'] ?? false) : false,
+          childId: child?.id,
+          initialName: child?.nickname ?? _profileController.userProfile.value?.childNickname ?? 'Child',
+          initialAge: (child?.age ?? _profileController.userProfile.value?.childAge ?? 10).toString(),
+          initialGrade: child?.grade ?? _profileController.userProfile.value?.childGrade ?? 'Grade 4',
+          initialNeurodivergent: child?.isNeurodivergent ?? _profileController.userProfile.value?.isNeurodivergent ?? false,
         ),
       ),
     );
 
     if (result != null && mounted) {
-      setState(() {
-        if (isEditing) {
-          _profiles[index] = result;
-        } else {
-          _profiles.add(result);
-        }
-      });
+      _profileController.fetchProfile();
     }
   }
 
@@ -68,33 +63,61 @@ class _ChildProfilesScreenState extends State<ChildProfilesScreen> {
             const SizedBox(height: 36),
             // Profiles Container & Add Button
             Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 540),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ..._profiles.asMap().entries.map((entry) {
-                          final index = entry.key;
-                          final profile = entry.value;
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 24.0),
-                            child: _buildProfileCard(
-                              name: profile['name'] ?? '',
-                              age: profile['age']?.toString() ?? '',
-                              onEdit: () => _openEditProfileScreen(index: index),
-                            ),
-                          );
-                        }),
-                        const SizedBox(height: 8),
-                        _buildAddChildButton(),
-                      ],
+              child: Obx(() {
+                final user = _profileController.userProfile.value;
+                final List<ChildModel> children = [];
+                if (user?.children != null && user!.children!.isNotEmpty) {
+                  children.addAll(user.children!);
+                } else if (user?.child != null) {
+                  children.add(user!.child!);
+                } else if (user?.childNickname != null) {
+                  children.add(ChildModel(
+                    nickname: user!.childNickname,
+                    age: user.childAge,
+                    grade: user.childGrade,
+                    isNeurodivergent: user.isNeurodivergent,
+                  ));
+                }
+
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Center(
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 540),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (children.isEmpty)
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 20),
+                              child: Text(
+                                "No child profiles found.",
+                                style: GoogleFonts.comicNeue(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            )
+                          else
+                            ...children.map((child) {
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 20.0),
+                                child: _buildProfileCard(
+                                  name: child.nickname ?? 'Child',
+                                  age: (child.age ?? 10).toString(),
+                                  onEdit: () => _openEditProfileScreen(child: child),
+                                ),
+                              );
+                            }),
+                          const SizedBox(height: 8),
+                          _buildAddChildButton(),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ),
+                );
+              }),
             ),
           ],
         ),
@@ -199,7 +222,9 @@ class _ChildProfilesScreenState extends State<ChildProfilesScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
         ),
         onPressed: () {
-          if (_profiles.isNotEmpty) {
+          final user = _profileController.userProfile.value;
+          final hasChildren = (user?.children != null && user!.children!.isNotEmpty) || (user?.child != null);
+          if (hasChildren) {
             Navigator.push(
               context,
               MaterialPageRoute(

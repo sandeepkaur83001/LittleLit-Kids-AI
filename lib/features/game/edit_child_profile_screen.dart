@@ -1,8 +1,10 @@
-import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
+import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:little_kids_ai/features/profile/controllers/profile_controller.dart';
 
 class EditChildProfileScreen extends StatefulWidget {
+  final int? childId;
   final String initialName;
   final String initialAge;
   final String? initialGrade;
@@ -11,6 +13,7 @@ class EditChildProfileScreen extends StatefulWidget {
 
   const EditChildProfileScreen({
     super.key,
+    this.childId,
     this.initialName = 'Test',
     this.initialAge = '14',
     this.initialGrade = 'Grade 4',
@@ -37,6 +40,12 @@ class _EditChildProfileScreenState extends State<EditChildProfileScreen> {
     'Grade 4',
     'Grade 5',
     'Grade 6',
+    'Grade 7',
+    'Grade 8',
+    'Grade 9',
+    'Grade 10',
+    'Grade 11',
+    'Grade 12',
   ];
 
   @override
@@ -57,27 +66,43 @@ class _EditChildProfileScreenState extends State<EditChildProfileScreen> {
     super.dispose();
   }
 
-  void _handleUpdate() {
+  void _handleUpdate() async {
     final name = _nameController.text.trim();
-    final age = _ageController.text.trim();
+    final ageStr = _ageController.text.trim();
 
-    if (name.isEmpty || age.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please fill all required fields')),
-      );
+    if (name.isEmpty || ageStr.isEmpty) {
+      CustomToast.showErrorToast(msg: 'Please fill all required fields');
       return;
     }
 
-    if (widget.onSave != null) {
-      widget.onSave!(name, age, _selectedGrade, _isNeurodivergent);
+    final age = int.tryParse(ageStr);
+    if (age == null || age <= 0) {
+      CustomToast.showErrorToast(msg: 'Please enter a valid child age');
+      return;
     }
 
-    Navigator.pop(context, {
-      'name': name,
-      'age': age,
-      'grade': _selectedGrade,
-      'neurodivergent': _isNeurodivergent,
-    });
+    final profileController = Get.find<ProfileController>();
+    final success = await profileController.updateProfile(
+      childId: widget.childId,
+      childNickname: name,
+      childAge: age,
+      childGrade: _selectedGrade,
+      isNeurodivergent: _isNeurodivergent,
+    );
+
+    if (success && mounted) {
+      if (widget.onSave != null) {
+        widget.onSave!(name, ageStr, _selectedGrade, _isNeurodivergent);
+      }
+
+      Navigator.pop(context, {
+        'id': widget.childId,
+        'name': name,
+        'age': ageStr,
+        'grade': _selectedGrade,
+        'neurodivergent': _isNeurodivergent,
+      });
+    }
   }
 
   @override

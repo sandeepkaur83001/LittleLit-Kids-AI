@@ -68,6 +68,7 @@ dependencies:
   flutter_facebook_auth: ^7.1.2
   sign_in_with_apple: ^6.1.4
   flutter_launcher_icons: ^0.14.4
+  audioplayers: ^6.1.2
 
 dev_dependencies:
   # The "flutter_lints" package below contains a set of recommended lints to

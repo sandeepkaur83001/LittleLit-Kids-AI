@@ -1,9 +1,11 @@
+import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/game_main_hub_screen.dart';
 import 'package:little_kids_ai/features/game/game_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 import 'package:little_kids_ai/features/game/child_canvas_portfolio_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/add_friend_dialog.dart';
+import 'package:little_kids_ai/features/profile/controllers/profile_controller.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -162,9 +164,13 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           // My Portfolio Card
           GestureDetector(
             onTap: () {
+              final childName = Get.find<ProfileController>().userProfile.value?.childNickname ??
+                  Globals.currentUser?.childNickname;
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) => const ChildCanvasPortfolioScreen()),
+                MaterialPageRoute(
+                  builder: (_) => ChildCanvasPortfolioScreen(childName: childName),
+                ),
               );
             },
             child: Container(
@@ -274,14 +280,19 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
       ),
       child: Row(
         children: [
-          Text(
-            'Tggtf',
-            style: GoogleFonts.comicNeue(
-              fontSize: 19,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E293B),
-            ),
-          ),
+          Obx(() {
+            final childName = Get.find<ProfileController>().userProfile.value?.childNickname ??
+                Globals.currentUser?.childNickname ??
+                'My Creations';
+            return Text(
+              childName,
+              style: GoogleFonts.comicNeue(
+                fontSize: 19,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF1E293B),
+              ),
+            );
+          }),
           const Spacer(),
           // Share with friends button
           GestureDetector(
