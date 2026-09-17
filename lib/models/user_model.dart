@@ -1,5 +1,6 @@
 import 'package:little_kids_ai/models/base_model.dart';
 import 'package:little_kids_ai/models/mood_model.dart';
+import 'package:little_kids_ai/models/interest_model.dart';
 
 class AuthResponseModel extends BaseModel {
   UserData? data;
@@ -39,6 +40,9 @@ class UserData {
   int? moodId;
   MoodModel? mood;
   MoodModel? feeling;
+  int? interestId;
+  InterestModel? interest;
+  String? secretKey;
   bool? termsAccepted;
   String? profilePicture;
   ChildModel? child;
@@ -62,6 +66,9 @@ class UserData {
     this.moodId,
     this.mood,
     this.feeling,
+    this.interestId,
+    this.interest,
+    this.secretKey,
     this.termsAccepted,
     this.profilePicture,
     this.child,
@@ -90,6 +97,11 @@ class UserData {
         : int.tryParse(json['mood_id']?.toString() ?? (json['feeling_id']?.toString() ?? ''));
     mood = json['mood'] != null ? MoodModel.fromJson(json['mood']) : null;
     feeling = json['feeling'] != null ? MoodModel.fromJson(json['feeling']) : null;
+    interestId = json['interest_id'] is int
+        ? json['interest_id']
+        : int.tryParse(json['interest_id']?.toString() ?? '');
+    interest = json['interest'] != null ? InterestModel.fromJson(json['interest']) : null;
+    secretKey = json['secret_key'] ?? json['key'];
     termsAccepted = _parseBool(json['terms_accepted'] ?? json['agree_to_terms']);
     profilePicture = json['profile_picture'];
     child = json['child'] != null ? ChildModel.fromJson(json['child']) : null;
@@ -135,6 +147,11 @@ class UserData {
     if (feeling != null) {
       data['feeling'] = feeling!.toJson();
     }
+    data['interest_id'] = interestId;
+    if (interest != null) {
+      data['interest'] = interest!.toJson();
+    }
+    data['secret_key'] = secretKey;
     data['terms_accepted'] = termsAccepted;
     data['profile_picture'] = profilePicture;
     if (child != null) {
@@ -162,6 +179,9 @@ class ChildModel {
   int? moodId;
   MoodModel? mood;
   MoodModel? feeling;
+  int? interestId;
+  InterestModel? interest;
+  String? secretKey;
 
   ChildModel({
     this.id,
@@ -174,6 +194,9 @@ class ChildModel {
     this.moodId,
     this.mood,
     this.feeling,
+    this.interestId,
+    this.interest,
+    this.secretKey,
   });
 
   ChildModel.fromJson(Map<String, dynamic> json) {
@@ -191,6 +214,11 @@ class ChildModel {
         : int.tryParse(json['mood_id']?.toString() ?? (json['feeling_id']?.toString() ?? ''));
     mood = json['mood'] != null ? MoodModel.fromJson(json['mood']) : null;
     feeling = json['feeling'] != null ? MoodModel.fromJson(json['feeling']) : null;
+    interestId = json['interest_id'] is int
+        ? json['interest_id']
+        : int.tryParse(json['interest_id']?.toString() ?? '');
+    interest = json['interest'] != null ? InterestModel.fromJson(json['interest']) : null;
+    secretKey = json['secret_key'] ?? json['key'];
   }
 
   Map<String, dynamic> toJson() {
@@ -209,6 +237,11 @@ class ChildModel {
     if (feeling != null) {
       data['feeling'] = feeling!.toJson();
     }
+    data['interest_id'] = interestId;
+    if (interest != null) {
+      data['interest'] = interest!.toJson();
+    }
+    data['secret_key'] = secretKey;
     return data;
   }
 }

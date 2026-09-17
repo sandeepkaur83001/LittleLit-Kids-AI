@@ -1,36 +1,49 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:get/get.dart';
+import 'package:little_kids_ai/features/game/controllers/categories_controller.dart';
 import 'package:little_kids_ai/features/game/game_play_selection_screen.dart';
 
 class PuzzleThemeSelectionScreen extends StatefulWidget {
-  const PuzzleThemeSelectionScreen({super.key});
+  final CategoryModel? category;
+  const PuzzleThemeSelectionScreen({super.key, this.category});
 
   @override
   State<PuzzleThemeSelectionScreen> createState() => _PuzzleThemeSelectionScreenState();
 }
 
 class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen> {
-  final List<Map<String, dynamic>> themes = [
+  final CategoriesController _categoriesController = Get.find<CategoriesController>();
+
+  final List<Map<String, dynamic>> _fallbackThemes = [
+    {
+      'title': 'Animal Kingdom',
+      'image': 'assets/images/animal_kingdom.png',
+    },
+    {
+      'title': 'Birthday',
+      'image': 'assets/images/birthday.png',
+    },
     {
       'title': 'Boats',
-      'image': 'https://picsum.photos/400/400?random=41',
+      'image': 'assets/images/boats.png',
+    },
+    {
+      'title': 'Christmas',
+      'image': 'assets/images/christmas.png',
     },
     {
       'title': 'Community Helpers',
-      'image': 'https://picsum.photos/400/400?random=42',
+      'image': 'assets/images/community_helpers.png',
     },
     {
       'title': 'Farm',
-      'image': 'https://picsum.photos/400/400?random=43',
-    },
-    {
-      'title': 'Animal Kingdom',
-      'image': 'https://picsum.photos/400/400?random=44',
+      'image': 'assets/images/farm.png',
     },
     {
       'title': 'Fruits & Vegetables',
-      'image': 'https://picsum.photos/400/400?random=45',
+      'image': 'assets/images/fruits_vegetables.png',
     },
     {
       'title': 'Your theme',
@@ -39,21 +52,24 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
   ];
 
   late PageController _pageController;
-  double _currentPage = 3.0; // Focus on 'Animal Kingdom'
+  double _currentPage = 2.0;
 
   @override
   void initState() {
     super.initState();
+    if (Globals.BearerToken != null && Globals.BearerToken!.isNotEmpty && _categoriesController.categoryList.isEmpty) {
+      _categoriesController.fetchCategories();
+    }
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 3,
+      initialPage: 2,
       viewportFraction: viewportFraction,
     );
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 3.0;
+          _currentPage = _pageController.page ?? 2.0;
         });
       }
     });
@@ -63,6 +79,39 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  CategoryModel? _findParentCategory() {
+    if (widget.category != null && widget.category!.children != null && widget.category!.children!.isNotEmpty) {
+      return widget.category;
+    }
+    final serverCategories = _categoriesController.categoryList;
+    if (serverCategories.isNotEmpty) {
+      return serverCategories.firstWhereOrNull((c) {
+        final cName = (c.name ?? '').toLowerCase();
+        final cSlug = (c.slug ?? '').toLowerCase();
+        return cSlug.contains('puzzle') || cName.contains('puzzle') || (c.id == 15);
+      });
+    }
+    return null;
+  }
+
+  List<Map<String, dynamic>> _getEffectiveThemes() {
+    final parent = _findParentCategory();
+    final children = parent?.children;
+    if (children != null && children.isNotEmpty) {
+      return children.map((c) {
+        final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        return {
+          'id': c.id,
+          'title': c.name ?? '',
+          'image': c.iconUrl ?? c.icon ?? '',
+          'isSpecial': isSpecial,
+          'model': c,
+        };
+      }).toList();
+    }
+    return _fallbackThemes;
   }
 
   void _onThemeSelected(Map<String, dynamic> theme) {
@@ -96,9 +145,11 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
                     final double itemWidth = slotWidth + 1.0;
                     final double itemHeight = math.min(itemWidth * 1.38, math.min(constraints.maxHeight * 0.80, 280.0));
 
+                    final effectiveThemes = _getEffectiveThemes();
+
                     return PageView.builder(
                       controller: _pageController,
-                      itemCount: themes.length,
+                      itemCount: effectiveThemes.length,
                       physics: const BouncingScrollPhysics(),
                       padEnds: true,
                       clipBehavior: Clip.none,
@@ -130,7 +181,7 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
                                       behavior: HitTestBehavior.opaque,
                                       onTap: () {
                                         if (isSelected) {
-                                          _onThemeSelected(themes[index]);
+                                          _onThemeSelected(effectiveThemes[index]);
                                         } else {
                                           _pageController.animateToPage(
                                             index,
@@ -139,7 +190,7 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
                                           );
                                         }
                                       },
-                                      child: _buildThemeCard(themes[index], isSelected),
+                                      child: _buildThemeCard(effectiveThemes[index], isSelected),
                                     ),
                                   ),
                                 ),
@@ -152,7 +203,7 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
                   },
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 35),
             ],
           ),
 
@@ -174,42 +225,39 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
 
   Widget _buildTopBar(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Stack(
+        alignment: Alignment.center,
         children: [
-          // Top-left mini chameleon
-          Image.asset(
-            'assets/images/chameleon.png',
-            height: 60,
-            width: 60,
-            fit: BoxFit.contain,
-            errorBuilder: (_, __, ___) => const SizedBox(width: 60),
-          ),
-
-          // Center Title
-          Expanded(
-            child: Text(
-              'Pick a theme to begin',
-              textAlign: TextAlign.center,
-              style: GoogleFonts.nunito(
-                fontSize: 26,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF1E293B),
+          // Centered Title Text
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 60),
+              child: Text(
+                'Pick your favorite theme to start solving puzzles!',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.nunito(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  color: const Color(0xFF1E293B),
+                ),
               ),
             ),
           ),
 
           // Close button
-          GestureDetector(
-            onTap: () => Navigator.pop(context),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: const Color(0xFF80CBC4).withOpacity(0.6),
-                shape: BoxShape.circle,
+          Positioned(
+            right: 0,
+            child: GestureDetector(
+              onTap: () => Navigator.pop(context),
+              child: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF80CBC4).withOpacity(0.6),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.close, color: Colors.black54, size: 26),
               ),
-              child: const Icon(Icons.close, color: Colors.black54, size: 26),
             ),
           ),
         ],
@@ -241,25 +289,14 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                theme['image'],
-                fit: BoxFit.cover,
-                width: double.infinity,
-                alignment: Alignment.center,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  );
-                },
-              ),
+              child: _buildCardImage(theme['image']),
             ),
           ),
           Container(
             padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
             alignment: Alignment.center,
             child: Text(
-              theme['title'],
+              theme['title'] ?? '',
               textAlign: TextAlign.center,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
@@ -272,6 +309,13 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCardImage(String? imagePath) {
+    return AppCardImage(
+      imageUrl: imagePath,
+      fallbackIcon: Icons.extension_outlined,
     );
   }
 

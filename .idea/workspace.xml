@@ -4,39 +4,7 @@
     <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="ec91455d-8c12-4b46-82ff-74ab68f86951" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Flutter_Plugins.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/android/app/src/main/AndroidManifest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/common_imports.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/common_imports.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/constants/app_constants.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/constants/app_constants.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/network/api_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/network/api_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/network/dependency_injection.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/network/dependency_injection.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/network/env_config.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/network/env_config.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/services/shared_manager.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/services/shared_manager.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/services/social_signin.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/services/social_signin.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/utils/common_methods.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/utils/common_methods.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/core/utils/globals.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/core/utils/globals.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/auth_choice_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/auth_choice_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/child_canvas_portfolio_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/child_canvas_portfolio_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/child_profiles_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/child_profiles_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/design_studio_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/design_studio_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/edit_child_profile_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/edit_child_profile_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/game_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/game_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/music_settings_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/music_settings_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/portfolio_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/portfolio_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/profile_setup_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/profile_setup_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/reward_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/reward_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/settings_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/settings_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/splash_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/splash_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/subscription_screen.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/subscription_screen.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/widgets/game_background.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/widgets/game_background.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/features/game/widgets/mood_bottom_sheet.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/features/game/widgets/mood_bottom_sheet.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/main.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/main.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/models/base_model.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/base_model.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/common/custom_toast.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/common/custom_toast.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pubspec.yaml" beforeDir="false" afterPath="$PROJECT_DIR$/pubspec.yaml" afterDir="false" />
-    </list>
+    <list default="true" id="ec91455d-8c12-4b46-82ff-74ab68f86951" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -112,7 +80,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="main" />
+                        <option value="origin/main" />
                       </list>
                     </value>
                   </entry>

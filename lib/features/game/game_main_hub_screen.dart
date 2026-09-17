@@ -1,6 +1,8 @@
+import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/portfolio_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:little_kids_ai/features/game/controllers/interests_controller.dart';
 
 class GameMainHubScreen extends StatefulWidget {
   const GameMainHubScreen({super.key});
@@ -10,18 +12,13 @@ class GameMainHubScreen extends StatefulWidget {
 }
 
 class _GameMainHubScreenState extends State<GameMainHubScreen> {
-  final List<Map<String, dynamic>> categories = [
-    {'label': 'Book', 'color': Colors.pink.shade100},
-    {'label': 'Music', 'color': Colors.yellow.shade200},
-    {'label': 'Magic Art', 'color': Colors.green.shade100},
-    {'label': 'Ask Litto', 'color': Colors.lightGreen.shade200},
-    {'label': 'STEM Projects', 'color': Colors.cyan.shade100},
-    {'label': 'Puzzles', 'color': Colors.teal.shade200},
-    {'label': 'Designs', 'color': Colors.white},
-    {'label': 'Art', 'color': Colors.yellow.shade400},
-  ];
+  final InterestsController _interestsController = Get.find<InterestsController>();
 
-  int _selectedCat = 0;
+  @override
+  void initState() {
+    super.initState();
+    _interestsController.fetchInterests();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,7 +105,7 @@ class _GameMainHubScreenState extends State<GameMainHubScreen> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (_) =>  PortfolioScreen()),
+                MaterialPageRoute(builder: (_) => const PortfolioScreen()),
               );
             },
             child: Container(
@@ -162,38 +159,46 @@ class _GameMainHubScreenState extends State<GameMainHubScreen> {
         color: Colors.cyan.shade100.withOpacity(0.5),
         borderRadius: BorderRadius.circular(60),
       ),
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          bool isSelected = index == _selectedCat;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedCat = index),
-            child: Container(
-              width: 100,
-              margin: const EdgeInsets.symmetric(horizontal: 8),
-              decoration: BoxDecoration(
-                color: categories[index]['color'],
-                shape: BoxShape.circle,
-                border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
-                ],
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                categories[index]['label'],
-                textAlign: TextAlign.center,
-                style: GoogleFonts.comicNeue(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87,
+      child: Obx(() {
+        final interests = _interestsController.interestList;
+        final selected = _interestsController.selectedInterest.value;
+
+        return ListView.builder(
+          scrollDirection: Axis.horizontal,
+          itemCount: interests.length,
+          itemBuilder: (context, index) {
+            final item = interests[index];
+            final bool isSelected = (selected != null && selected.id == item.id) || (item.isSelected == true);
+            final color = _interestsController.getColorForIndex(index);
+
+            return GestureDetector(
+              onTap: () => _interestsController.selectInterest(item),
+              child: Container(
+                width: 100,
+                margin: const EdgeInsets.symmetric(horizontal: 8),
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                  border: isSelected ? Border.all(color: Colors.black, width: 3) : null,
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 4, offset: const Offset(0, 2)),
+                  ],
+                ),
+                alignment: Alignment.center,
+                child: Text(
+                  item.name ?? '',
+                  textAlign: TextAlign.center,
+                  style: GoogleFonts.comicNeue(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
                 ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        );
+      }),
     );
   }
 }

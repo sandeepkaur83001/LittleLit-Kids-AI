@@ -193,10 +193,9 @@ class _GameHubScreenState extends State<GameHubScreen> {
           Expanded(
             child: ClipRRect(
               borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                game['image']!,
-                fit: BoxFit.cover,
-                width: double.infinity,
+              child: AppCardImage(
+                imageUrl: game['image'],
+                fallbackIcon: Icons.videogame_asset_outlined,
               ),
             ),
           ),

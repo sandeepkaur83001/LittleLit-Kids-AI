@@ -67,6 +67,7 @@ class ProfileApiService {
     bool? isNeurodivergent,
     bool? backgroundMusic,
     int? moodId,
+    int? interestId,
     bool showLoading = true,
   }) async {
     final Map<String, dynamic> body = {
@@ -79,6 +80,7 @@ class ProfileApiService {
       if (isNeurodivergent != null) 'is_neurodivergent': isNeurodivergent ? '1' : '0',
       if (backgroundMusic != null) 'background_music': backgroundMusic ? '1' : '0',
       if (moodId != null) 'mood_id': moodId.toString(),
+      if (interestId != null) 'interest_id': interestId.toString(),
     };
 
     final response = await ApiService.formPost(

@@ -3,6 +3,10 @@ import 'package:get/get.dart';
 import 'package:little_kids_ai/core/services/background_music_service.dart';
 import 'package:little_kids_ai/features/auth/controllers/auth_controller.dart';
 import 'package:little_kids_ai/features/profile/controllers/profile_controller.dart';
+import 'package:little_kids_ai/features/game/controllers/categories_controller.dart';
+import 'package:little_kids_ai/features/game/controllers/interests_controller.dart';
+import 'package:little_kids_ai/features/game/controllers/skills_controller.dart';
+import 'package:little_kids_ai/features/game/controllers/friends_controller.dart';
 
 class DependencyInjection {
   static void init() {
@@ -11,6 +15,9 @@ class DependencyInjection {
     Get.put<BackgroundMusicService>(BackgroundMusicService(), permanent: true);
     Get.put<AuthController>(AuthController(), permanent: true);
     Get.put<ProfileController>(ProfileController(), permanent: true);
+    Get.put<CategoriesController>(CategoriesController(), permanent: true);
+    Get.put<InterestsController>(InterestsController(), permanent: true);
+    Get.put<SkillsController>(SkillsController(), permanent: true);
+    Get.put<FriendsController>(FriendsController(), permanent: true);
   }
 }
-

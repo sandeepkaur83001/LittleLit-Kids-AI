@@ -83,6 +83,7 @@ class ProfileController extends GetxController {
     bool? isNeurodivergent,
     bool? backgroundMusic,
     int? moodId,
+    int? interestId,
     bool showLoading = true,
   }) async {
     isLoading.value = true;
@@ -98,6 +99,7 @@ class ProfileController extends GetxController {
         isNeurodivergent: isNeurodivergent,
         backgroundMusic: backgroundMusic,
         moodId: moodId,
+        interestId: interestId,
         showLoading: showLoading,
       );
 

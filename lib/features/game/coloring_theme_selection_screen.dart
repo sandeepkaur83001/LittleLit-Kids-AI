@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:get/get.dart';
+import 'package:little_kids_ai/features/game/controllers/categories_controller.dart';
 import 'package:little_kids_ai/features/game/coloring_drawing_selection_screen.dart';
 
 class ColoringTheme {
@@ -18,47 +20,70 @@ class ColoringTheme {
 }
 
 class ColoringThemeSelectionScreen extends StatefulWidget {
-  const ColoringThemeSelectionScreen({super.key});
+  final CategoryModel? category;
+  const ColoringThemeSelectionScreen({super.key, this.category});
 
   @override
   State<ColoringThemeSelectionScreen> createState() => _ColoringThemeSelectionScreenState();
 }
 
 class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScreen> with SingleTickerProviderStateMixin {
+  final CategoriesController _categoriesController = Get.find<CategoriesController>();
+
   late PageController _pageController;
-  double _currentPage = 3.0;
+  double _currentPage = 2.0;
 
   late AnimationController _floatController;
 
-  final List<ColoringTheme> _themes = [
-    ColoringTheme(
-      title: 'Farm',
-      coverImage: 'https://picsum.photos/400/400?random=41',
-      drawings: [
-        DrawingItem(title: 'Barn & Tractor', image: 'https://picsum.photos/400/400?random=411'),
-        DrawingItem(title: 'Cow & Calf', image: 'https://picsum.photos/400/400?random=412'),
-        DrawingItem(title: 'Rooster', image: 'https://picsum.photos/400/400?random=413'),
-        DrawingItem(title: 'Sheep Flock', image: 'https://picsum.photos/400/400?random=414'),
-      ],
-    ),
+  final List<ColoringTheme> _fallbackThemes = [
     ColoringTheme(
       title: 'Animal Kingdom',
-      coverImage: 'https://picsum.photos/400/400?random=42',
+      coverImage: 'assets/images/animal_kingdom.png',
       drawings: [
         DrawingItem(title: 'Lion King', image: 'https://picsum.photos/400/400?random=421'),
         DrawingItem(title: 'Elephant Family', image: 'https://picsum.photos/400/400?random=422'),
-        DrawingItem(title: 'Cheetah Run', image: 'https://picsum.photos/400/400?random=423'),
-        DrawingItem(title: 'Playful Monkey', image: 'https://picsum.photos/400/400?random=424'),
+      ],
+    ),
+    ColoringTheme(
+      title: 'Birthday',
+      coverImage: 'assets/images/birthday.png',
+      drawings: [
+        DrawingItem(title: 'Birthday Cake', image: 'https://picsum.photos/400/400?random=423'),
+      ],
+    ),
+    ColoringTheme(
+      title: 'Boats',
+      coverImage: 'assets/images/boats.png',
+      drawings: [
+        DrawingItem(title: 'Sailboat', image: 'https://picsum.photos/400/400?random=424'),
+      ],
+    ),
+    ColoringTheme(
+      title: 'Christmas',
+      coverImage: 'assets/images/christmas.png',
+      drawings: [
+        DrawingItem(title: 'Christmas Tree', image: 'https://picsum.photos/400/400?random=425'),
+      ],
+    ),
+    ColoringTheme(
+      title: 'Community Helpers',
+      coverImage: 'assets/images/community_helpers.png',
+      drawings: [
+        DrawingItem(title: 'Firefighter', image: 'https://picsum.photos/400/400?random=426'),
+      ],
+    ),
+    ColoringTheme(
+      title: 'Farm',
+      coverImage: 'assets/images/farm.png',
+      drawings: [
+        DrawingItem(title: 'Barn & Tractor', image: 'https://picsum.photos/400/400?random=427'),
       ],
     ),
     ColoringTheme(
       title: 'Fruits & Vegetables',
-      coverImage: 'https://picsum.photos/400/400?random=43',
+      coverImage: 'assets/images/fruits_vegetables.png',
       drawings: [
-        DrawingItem(title: 'Apple & Pear', image: 'https://picsum.photos/400/400?random=431'),
-        DrawingItem(title: 'Watermelon Party', image: 'https://picsum.photos/400/400?random=432'),
-        DrawingItem(title: 'Funny Carrot', image: 'https://picsum.photos/400/400?random=433'),
-        DrawingItem(title: 'Banana Bunch', image: 'https://picsum.photos/400/400?random=434'),
+        DrawingItem(title: 'Apple & Pear', image: 'https://picsum.photos/400/400?random=428'),
       ],
     ),
     ColoringTheme(
@@ -67,30 +92,44 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
       isSpecial: true,
       drawings: [
         DrawingItem(title: 'Custom Sparkle', image: 'https://picsum.photos/400/400?random=441'),
-        DrawingItem(title: 'Magic Canvas', image: 'https://picsum.photos/400/400?random=442'),
-      ],
-    ),
-    ColoringTheme(
-      title: 'Christmas',
-      coverImage: 'https://picsum.photos/400/400?random=45',
-      drawings: [
-        DrawingItem(title: 'Snowy Cabin', image: 'https://picsum.photos/400/400?random=451'),
-        DrawingItem(title: 'Santa Claus', image: 'https://picsum.photos/400/400?random=452'),
-        DrawingItem(title: 'Reindeer Sleigh', image: 'https://picsum.photos/400/400?random=453'),
-        DrawingItem(title: 'Christmas Tree', image: 'https://picsum.photos/400/400?random=454'),
-      ],
-    ),
-    ColoringTheme(
-      title: 'Ocean Life',
-      coverImage: 'https://picsum.photos/400/400?random=46',
-      drawings: [
-        DrawingItem(title: 'Friendly Dolphin', image: 'https://picsum.photos/400/400?random=461'),
-        DrawingItem(title: 'Coral Reef', image: 'https://picsum.photos/400/400?random=462'),
-        DrawingItem(title: 'Whale Journey', image: 'https://picsum.photos/400/400?random=463'),
-        DrawingItem(title: 'Sea Turtle', image: 'https://picsum.photos/400/400?random=464'),
       ],
     ),
   ];
+
+  CategoryModel? _findParentCategory() {
+    if (widget.category != null && widget.category!.children != null && widget.category!.children!.isNotEmpty) {
+      return widget.category;
+    }
+    final serverCategories = _categoriesController.categoryList;
+    if (serverCategories.isNotEmpty) {
+      return serverCategories.firstWhereOrNull((c) {
+        final cName = (c.name ?? '').toLowerCase();
+        final cSlug = (c.slug ?? '').toLowerCase();
+        return cSlug.contains('color') || cName.contains('color') || (c.id == 58);
+      });
+    }
+    return null;
+  }
+
+  List<ColoringTheme> _getEffectiveThemes() {
+    final parent = _findParentCategory();
+    final children = parent?.children;
+    if (children != null && children.isNotEmpty) {
+      return children.map((c) {
+        final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        return ColoringTheme(
+          title: c.name ?? '',
+          coverImage: c.iconUrl ?? c.icon ?? '',
+          isSpecial: isSpecial,
+          drawings: [
+            DrawingItem(title: c.name ?? 'Drawing 1', image: c.iconUrl ?? c.icon ?? ''),
+            DrawingItem(title: '${c.name ?? 'Drawing'} Adventure', image: c.iconUrl ?? c.icon ?? ''),
+          ],
+        );
+      }).toList();
+    }
+    return _fallbackThemes;
+  }
 
   @override
   void initState() {
@@ -153,9 +192,11 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                     final double itemWidth = slotWidth + 1.0;
                     final double itemHeight = math.min(itemWidth * 1.38, math.min(constraints.maxHeight * 0.80, 280.0));
 
+                    final effectiveThemes = _getEffectiveThemes();
+
                     return PageView.builder(
                       controller: _pageController,
-                      itemCount: _themes.length,
+                      itemCount: effectiveThemes.length,
                       physics: const BouncingScrollPhysics(),
                       padEnds: true,
                       clipBehavior: Clip.none,
@@ -187,7 +228,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                                       behavior: HitTestBehavior.opaque,
                                       onTap: () {
                                         if (isSelected) {
-                                          _onThemeSelected(_themes[index]);
+                                          _onThemeSelected(effectiveThemes[index]);
                                         } else {
                                           _pageController.animateToPage(
                                             index,
@@ -196,7 +237,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                                           );
                                         }
                                       },
-                                      child: _buildThemeCard(_themes[index], isSelected),
+                                      child: _buildThemeCard(effectiveThemes[index], isSelected),
                                     ),
                                   ),
                                 ),
@@ -252,21 +293,16 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
                   double yOffset = 0.0;
 
                   if (t < 0.28) {
-                    // Phase 1: Move Up smoothly (0.0 -> 0.28)
                     final double p = t / 0.28;
                     yOffset = -10.0 * Curves.easeOutQuad.transform(p);
                   } else if (t < 0.70) {
-                    // Phase 2: Moderate Vertical Shake Up & Down (0.28 -> 0.70)
                     final double p = (t - 0.28) / 0.42;
-                    // 4 gentle vertical shakes
                     final double verticalShake = math.sin(p * 4 * 2 * math.pi);
                     yOffset = -10.0 + (verticalShake * 3.0);
                   } else if (t < 0.88) {
-                    // Phase 3: Move Down back to baseline (0.70 -> 0.88)
                     final double p = (t - 0.70) / 0.18;
                     yOffset = -10.0 * (1.0 - Curves.easeInQuad.transform(p));
                   } else {
-                    // Phase 4: Settle at baseline (0.88 -> 1.0)
                     yOffset = 0.0;
                   }
 
@@ -345,16 +381,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                theme.coverImage,
-                fit: BoxFit.cover,
-                width: double.infinity,
-                alignment: Alignment.center,
-                errorBuilder: (_, __, ___) => Container(
-                  color: Colors.grey.shade200,
-                  child: const Icon(Icons.palette_rounded, size: 40, color: Colors.blue),
-                ),
-              ),
+              child: _buildCardImage(theme.coverImage),
             ),
           ),
           Container(
@@ -463,6 +490,13 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCardImage(String? imagePath) {
+    return AppCardImage(
+      imageUrl: imagePath,
+      fallbackIcon: Icons.palette_outlined,
     );
   }
 }

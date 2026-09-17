@@ -1,10 +1,13 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:get/get.dart';
+import 'package:little_kids_ai/features/game/controllers/categories_controller.dart';
 import 'package:little_kids_ai/features/game/build_project_item_selection_screen.dart';
 
 class BuildProjectCategorySelectionScreen extends StatefulWidget {
-  const BuildProjectCategorySelectionScreen({super.key});
+  final CategoryModel? category;
+  const BuildProjectCategorySelectionScreen({super.key, this.category});
 
   @override
   State<BuildProjectCategorySelectionScreen> createState() =>
@@ -14,57 +17,54 @@ class BuildProjectCategorySelectionScreen extends StatefulWidget {
 class _BuildProjectCategorySelectionScreenState
     extends State<BuildProjectCategorySelectionScreen>
     with SingleTickerProviderStateMixin {
+  final CategoriesController _categoriesController = Get.find<CategoriesController>();
+
   late PageController _pageController;
   double _currentPage = 2.0;
 
   late AnimationController _floatController;
 
-  final List<Map<String, dynamic>> categories = [
+  final List<Map<String, dynamic>> _fallbackCategories = [
     {
-      'title': 'Robotics & Machines',
-      'image': 'https://picsum.photos/400/400?random=51',
+      'title': 'Animal Kingdom',
+      'image': 'assets/images/animal_kingdom.png',
     },
     {
-      'title': 'Science Experiments',
-      'image': 'https://picsum.photos/400/400?random=52',
+      'title': 'Birthday',
+      'image': 'assets/images/birthday.png',
     },
     {
-      'title': 'Craft & Play',
-      'image': 'https://picsum.photos/400/400?random=53',
+      'title': 'Boats',
+      'image': 'assets/images/boats.png',
     },
     {
-      'title': 'Kitchen Lab',
-      'image': 'https://picsum.photos/400/400?random=54',
+      'title': 'Christmas',
+      'image': 'assets/images/christmas.png',
+    },
+    {
+      'title': 'Community Helpers',
+      'image': 'assets/images/community_helpers.png',
+    },
+    {
+      'title': 'Farm',
+      'image': 'assets/images/farm.png',
+    },
+    {
+      'title': 'Fruits & Vegetables',
+      'image': 'assets/images/fruits_vegetables.png',
     },
     {
       'title': 'Your Theme',
       'isSpecial': true,
-    },
-    {
-      'title': 'Nature Quest',
-      'image': 'https://picsum.photos/400/400?random=55',
-    },
-    {
-      'title': 'Clay & Sculpting',
-      'image': 'https://picsum.photos/400/400?random=56',
-    },
-    {
-      'title': 'Puppet Theater',
-      'image': 'https://picsum.photos/400/400?random=57',
-    },
-    {
-      'title': 'Space & Rockets',
-      'image': 'https://picsum.photos/400/400?random=58',
-    },
-    {
-      'title': 'Wooden Structures',
-      'image': 'https://picsum.photos/400/400?random=59',
     },
   ];
 
   @override
   void initState() {
     super.initState();
+    if (Globals.BearerToken != null && Globals.BearerToken!.isNotEmpty && _categoriesController.categoryList.isEmpty) {
+      _categoriesController.fetchCategories();
+    }
     _floatController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 2200),
@@ -92,12 +92,45 @@ class _BuildProjectCategorySelectionScreenState
     super.dispose();
   }
 
-  void _onCategorySelected(int index) {
+  CategoryModel? _findParentCategory() {
+    if (widget.category != null && widget.category!.children != null && widget.category!.children!.isNotEmpty) {
+      return widget.category;
+    }
+    final serverCategories = _categoriesController.categoryList;
+    if (serverCategories.isNotEmpty) {
+      return serverCategories.firstWhereOrNull((c) {
+        final cName = (c.name ?? '').toLowerCase();
+        final cSlug = (c.slug ?? '').toLowerCase();
+        return cSlug.contains('build') || cSlug.contains('project') || cName.contains('project') || (c.id == 76);
+      });
+    }
+    return null;
+  }
+
+  List<Map<String, dynamic>> _getEffectiveCategories() {
+    final parent = _findParentCategory();
+    final children = parent?.children;
+    if (children != null && children.isNotEmpty) {
+      return children.map((c) {
+        final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        return {
+          'id': c.id,
+          'title': c.name ?? '',
+          'image': c.iconUrl ?? c.icon ?? '',
+          'isSpecial': isSpecial,
+          'model': c,
+        };
+      }).toList();
+    }
+    return _fallbackCategories;
+  }
+
+  void _onCategorySelected(Map<String, dynamic> category) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => BuildProjectItemSelectionScreen(
-          categoryTitle: categories[index]['title'] ?? 'Robotics & Machines',
+          categoryTitle: category['title'] ?? 'Robotics & Machines',
         ),
       ),
     );
@@ -122,9 +155,11 @@ class _BuildProjectCategorySelectionScreenState
                     final double itemWidth = slotWidth + 1.0;
                     final double itemHeight = math.min(itemWidth * 1.38, math.min(constraints.maxHeight * 0.80, 280.0));
 
+                    final effectiveCategories = _getEffectiveCategories();
+
                     return PageView.builder(
                       controller: _pageController,
-                      itemCount: categories.length,
+                      itemCount: effectiveCategories.length,
                       physics: const BouncingScrollPhysics(),
                       padEnds: true,
                       clipBehavior: Clip.none,
@@ -159,7 +194,7 @@ class _BuildProjectCategorySelectionScreenState
                                       behavior: HitTestBehavior.opaque,
                                       onTap: () {
                                         if (isSelected) {
-                                          _onCategorySelected(index);
+                                          _onCategorySelected(effectiveCategories[index]);
                                         } else {
                                           _pageController.animateToPage(
                                             index,
@@ -170,7 +205,7 @@ class _BuildProjectCategorySelectionScreenState
                                         }
                                       },
                                       child: _buildCategoryCard(
-                                          categories[index], isSelected),
+                                          effectiveCategories[index], isSelected),
                                     ),
                                   ),
                                 ),
@@ -227,20 +262,16 @@ class _BuildProjectCategorySelectionScreenState
                   double yOffset = 0.0;
 
                   if (t < 0.28) {
-                    // Phase 1: Move Up smoothly (0.0 -> 0.28)
                     final double p = t / 0.28;
                     yOffset = -10.0 * Curves.easeOutQuad.transform(p);
                   } else if (t < 0.70) {
-                    // Phase 2: Moderate Vertical Shake Up & Down (0.28 -> 0.70)
                     final double p = (t - 0.28) / 0.42;
                     final double verticalShake = math.sin(p * 4 * 2 * math.pi);
                     yOffset = -10.0 + (verticalShake * 3.0);
                   } else if (t < 0.88) {
-                    // Phase 3: Move Down back to baseline (0.70 -> 0.88)
                     final double p = (t - 0.70) / 0.18;
                     yOffset = -10.0 * (1.0 - Curves.easeInQuad.transform(p));
                   } else {
-                    // Phase 4: Settle at baseline (0.88 -> 1.0)
                     yOffset = 0.0;
                   }
 
@@ -250,7 +281,7 @@ class _BuildProjectCategorySelectionScreenState
                   );
                 },
                 child: Image.asset(
-                  'assets/images/src_assets_icons_intro_crafty.png',
+                  'assets/images/src_assets_icons_char_carfty.png',
                   height: 82,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => Image.asset(
@@ -268,10 +299,10 @@ class _BuildProjectCategorySelectionScreenState
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 90),
                 child: Text(
-                  'What kind of project should we build today?',
+                  'Pick a category to begin',
                   textAlign: TextAlign.center,
                   style: GoogleFonts.nunito(
-                    fontSize: 23,
+                    fontSize: 24,
                     fontWeight: FontWeight.w900,
                     color: const Color(0xFF111827),
                   ),
@@ -300,6 +331,13 @@ class _BuildProjectCategorySelectionScreenState
     );
   }
 
+  Widget _buildCardImage(String imagePath) {
+    return AppCardImage(
+      imageUrl: imagePath,
+      fallbackIcon: Icons.handyman_outlined,
+    );
+  }
+
   Widget _buildCategoryCard(Map<String, dynamic> category, bool isSelected) {
     if (category['isSpecial'] == true) {
       return _buildSpecialCard(category, isSelected);
@@ -324,18 +362,7 @@ class _BuildProjectCategorySelectionScreenState
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                category['image'],
-                fit: BoxFit.cover,
-                width: double.infinity,
-                alignment: Alignment.center,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  );
-                },
-              ),
+              child: _buildCardImage(category['image']),
             ),
           ),
           Container(

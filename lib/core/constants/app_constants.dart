@@ -33,6 +33,22 @@ class ApiEndPointConstants {
   static const String moods = "/moods";
   static const String changePassword = "/change-password";
 
+  // Categories
+  static const String categories = "/categories";
+
+  // Interests
+  static const String interests = "/interests";
+
+  // Skills
+  static const String skills = "/skills";
+
+  // Friends & Secret Key Invitations
+  static const String friends = "/friends";
+  static const String friendRequests = "/friends/requests";
+  static const String addFriend = "/friends/add";
+  static const String acceptFriend = "/friends/accept";
+  static const String rejectFriend = "/friends/reject";
+
   // Legacy / Other
   static const startVideoCall = "/chat/generateAgoraToken?";
 }

@@ -263,20 +263,10 @@ class _WeeklyCompetitionPickOneScreenState extends State<WeeklyCompetitionPickOn
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          item['image'] ?? 'https://picsum.photos/400/400',
-          fit: BoxFit.cover,
-          width: double.infinity,
-          height: double.infinity,
-          alignment: Alignment.center,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              color: item['color'] ?? const Color(0xFFF1F5F9),
-              child: const Center(
-                child: Icon(Icons.auto_awesome_rounded, color: Colors.amber, size: 40),
-              ),
-            );
-          },
+        child: AppCardImage(
+          imageUrl: item['image'],
+          backgroundColor: item['color'],
+          fallbackIcon: Icons.auto_awesome_rounded,
         ),
       ),
     );

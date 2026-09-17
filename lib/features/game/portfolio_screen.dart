@@ -1,11 +1,12 @@
 import 'package:get/get.dart';
 import 'package:little_kids_ai/core/common_imports.dart';
-import 'package:little_kids_ai/features/game/game_main_hub_screen.dart';
 import 'package:little_kids_ai/features/game/game_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
 import 'package:little_kids_ai/features/game/child_canvas_portfolio_screen.dart';
+import 'package:little_kids_ai/features/game/all_friends_screen.dart';
 import 'package:little_kids_ai/features/game/widgets/add_friend_dialog.dart';
-import 'package:little_kids_ai/features/profile/controllers/profile_controller.dart';
+import 'package:little_kids_ai/features/game/controllers/interests_controller.dart';
+import 'package:little_kids_ai/features/game/controllers/friends_controller.dart';
 
 class PortfolioScreen extends StatefulWidget {
   const PortfolioScreen({super.key});
@@ -15,22 +16,15 @@ class PortfolioScreen extends StatefulWidget {
 }
 
 class _PortfolioScreenState extends State<PortfolioScreen> {
-  final List<Map<String, dynamic>> categories = [
-    {'label': 'Book', 'color': const Color(0xFFFFB7B7)},
-    {'label': 'Music', 'color': const Color(0xFFFFE897)},
-    {'label': 'Magic Art', 'color': const Color(0xFFF0FAD1)},
-    {'label': 'Ask Litto', 'color': const Color(0xFFC5E1A5)},
-    {'label': 'STEM Projects', 'color': const Color(0xFFB2EBF2)},
-    {'label': 'Puzzles', 'color': const Color(0xFF80CBC4)},
-    {'label': 'Designs', 'color': const Color(0xFFF5F5F5)},
-    {'label': 'Art', 'color': const Color(0xFFFFE082)},
-  ];
+  final InterestsController _interestsController = Get.find<InterestsController>();
+  final FriendsController _friendsController = Get.find<FriendsController>();
 
-  int _selectedCat = 0;
-
-  void _onCategorySelected(int index) {
-    setState(() => _selectedCat = index);
-    // ApiService.fetchPortfolio(categories[index]['label']); // API Call: Filter portfolio items
+  @override
+  void initState() {
+    super.initState();
+    _interestsController.fetchInterests();
+    _friendsController.fetchFriends();
+    _friendsController.fetchPendingRequests();
   }
 
   @override
@@ -81,7 +75,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   _buildTopRow(),
                   const SizedBox(height: 10),
 
-                  // Categories Bar with Star Dividers
+                  // Categories / Interests Bar with Star Dividers
                   _buildCategoryBar(),
                   const SizedBox(height: 12),
 
@@ -92,6 +86,9 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   // Child Creations Horizontal Cards
                   _buildCreationsHorizontalList(),
                   const SizedBox(height: 16),
+
+                  // Pending Friend Requests (Invitations) Section
+                  _buildPendingRequestsSection(),
 
                   // Friends Header Row
                   _buildFriendsSection(),
@@ -138,13 +135,12 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                       style: GoogleFonts.comicNeue(
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
-                        // fontStyle: FontStyle.italic,
                         color: const Color(0xFF1E293B),
                       ),
                     ),
                   ),
                   GestureDetector(
-                    onTap: (){
+                    onTap: () {
                       RouteNavigate().navigateToPush(context, GameScreen());
                     },
                     child: Container(
@@ -187,7 +183,7 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
                   ),
                 ],
               ),
-              child:  Image.asset(
+              child: Image.asset(
                 'assets/images/src_assets_icons_port_my_next.png',
                 height: 42,
                 fit: BoxFit.cover,
@@ -216,47 +212,56 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             color: const Color(0xFFB2EBF2).withOpacity(0.45),
             borderRadius: BorderRadius.circular(48),
           ),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 14),
-            itemCount: categories.length,
-            itemBuilder: (context, index) {
-              bool isSelected = index == _selectedCat;
-              return GestureDetector(
-                onTap: () => _onCategorySelected(index),
-                child: Container(
-                  width: 82,
-                  margin: const EdgeInsets.symmetric(horizontal: 6),
-                  decoration: BoxDecoration(
-                    color: categories[index]['color'],
-                    shape: BoxShape.circle,
-                    border: isSelected ? Border.all(color: Colors.black, width: 3.0) : null,
-                    boxShadow: [
-                      if (isSelected)
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
-                          blurRadius: 6,
-                          offset: const Offset(0, 2),
+          child: Obx(() {
+            final interests = _interestsController.interestList;
+            final selected = _interestsController.selectedInterest.value;
+
+            return ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              itemCount: interests.length,
+              itemBuilder: (context, index) {
+                final item = interests[index];
+                final bool isSelected = (selected != null && selected.id == item.id) ||
+                    (item.isSelected == true);
+                final pillColor = _interestsController.getColorForIndex(index);
+
+                return GestureDetector(
+                  onTap: () => _interestsController.selectInterest(item),
+                  child: Container(
+                    width: 82,
+                    margin: const EdgeInsets.symmetric(horizontal: 6),
+                    decoration: BoxDecoration(
+                      color: pillColor,
+                      shape: BoxShape.circle,
+                      border: isSelected ? Border.all(color: Colors.black, width: 3.0) : null,
+                      boxShadow: [
+                        if (isSelected)
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.12),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                      ],
+                    ),
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.all(4.0),
+                      child: Text(
+                        item.name ?? '',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.comicNeue(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
                         ),
-                    ],
-                  ),
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: const EdgeInsets.all(4.0),
-                    child: Text(
-                      categories[index]['label'],
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.comicNeue(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
                       ),
                     ),
                   ),
-                ),
-              );
-            },
-          ),
+                );
+              },
+            );
+          }),
         ),
         _buildStarLine(),
       ],
@@ -333,12 +338,20 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
             ),
           ),
           const SizedBox(width: 14),
-          Text(
-            'View All',
-            style: GoogleFonts.comicNeue(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E293B),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ChildCanvasPortfolioScreen()),
+              );
+            },
+            child: Text(
+              'View All',
+              style: GoogleFonts.comicNeue(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0284C7),
+              ),
             ),
           ),
         ],
@@ -411,16 +424,216 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
     );
   }
 
+  Widget _buildPendingRequestsSection() {
+    return Obx(() {
+      final pending = _friendsController.pendingRequests;
+      if (pending.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+            child: Row(
+              children: [
+                Text(
+                  'Friend Invitations',
+                  style: GoogleFonts.comicNeue(
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Text(
+                    '${pending.length}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 8),
+
+          // Horizontal List of Pending Request Cards
+          SizedBox(
+            height: 120,
+            child: ListView.builder(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              itemCount: pending.length,
+              itemBuilder: (context, index) {
+                final request = pending[index];
+                final userId = request.userId ?? request.id;
+
+                return Container(
+                  width: 220,
+                  margin: const EdgeInsets.only(right: 14),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF9C3), // Soft pastel yellow/amber
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: const Color(0xFFFDE047), width: 1.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.06),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      // Avatar
+                      Container(
+                        width: 46,
+                        height: 46,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: const Color(0xFFFACC15), width: 1.5),
+                        ),
+                        child: ClipOval(
+                          child: (request.profilePicture != null && request.profilePicture!.isNotEmpty)
+                              ? AppCardImage(
+                                  imageUrl: request.profilePicture,
+                                  fallbackIcon: Icons.person_rounded,
+                                )
+                              : Image.asset(
+                                  'assets/images/litto.png',
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (_, __, ___) => const Icon(
+                                    Icons.person_rounded,
+                                    color: Color(0xFFEAB308),
+                                    size: 26,
+                                  ),
+                                ),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+
+                      // Details & Action Buttons
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              request.displayName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: GoogleFonts.comicNeue(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: const Color(0xFF1E293B),
+                              ),
+                            ),
+                            if (request.secretKey != null && request.secretKey!.isNotEmpty)
+                              Text(
+                                '#${request.secretKey}',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: GoogleFonts.comicNeue(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: const Color(0xFF854D0E),
+                                ),
+                              ),
+                            const SizedBox(height: 6),
+                            Row(
+                              children: [
+                                // Accept Button
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      if (userId != null) {
+                                        _friendsController.acceptRequest(userId);
+                                      }
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFF22C55E),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      alignment: Alignment.center,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          const Icon(Icons.check_rounded, color: Colors.white, size: 14),
+                                          const SizedBox(width: 2),
+                                          Text(
+                                            'Accept',
+                                            style: GoogleFonts.comicNeue(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 11,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                // Decline Button
+                                GestureDetector(
+                                  onTap: () {
+                                    if (userId != null) {
+                                      _friendsController.rejectRequest(userId);
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.close_rounded,
+                                      color: Color(0xFFEF4444),
+                                      size: 16,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16),
+        ],
+      );
+    });
+  }
+
   Widget _buildFriendsSection() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
-      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.92),
-        borderRadius: BorderRadius.circular(16),
+        color: Colors.white.withValues(alpha: 0.28),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.white.withValues(alpha: 0.2),
             blurRadius: 6,
             offset: const Offset(0, 2),
           ),
@@ -439,29 +652,66 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
           const Spacer(),
           GestureDetector(
             onTap: () => AddFriendDialog.show(context),
-            child: Image.asset(
-              'assets/images/src_assets_icons_add_friend.png',
-              width: 32,
-              height: 32,
-              fit: BoxFit.contain,
-              errorBuilder: (_, __, ___) => Container(
-                padding: const EdgeInsets.all(5),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE0F2FE),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: const Color(0xFF0284C7), width: 1.5),
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Image.asset(
+                  'assets/images/src_assets_icons_add_friend.png',
+                  width: 32,
+                  height: 32,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => Container(
+                    padding: const EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE0F2FE),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: const Color(0xFF0284C7), width: 1.5),
+                    ),
+                    child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0284C7), size: 18),
+                  ),
                 ),
-                child: const Icon(Icons.person_add_alt_1_rounded, color: Color(0xFF0284C7), size: 18),
-              ),
+                Obx(() {
+                  final count = _friendsController.pendingRequests.length;
+                  if (count == 0) return const SizedBox.shrink();
+                  return Positioned(
+                    top: -4,
+                    right: -4,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Text(
+                        '$count',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 9,
+                          fontWeight: FontWeight.bold,
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                  );
+                }),
+              ],
             ),
           ),
           const SizedBox(width: 14),
-          Text(
-            'View All',
-            style: GoogleFonts.comicNeue(
-              fontSize: 15,
-              fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E293B),
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const AllFriendsScreen()),
+              );
+            },
+            child: Text(
+              'View All',
+              style: GoogleFonts.comicNeue(
+                fontSize: 15,
+                fontWeight: FontWeight.bold,
+                color: const Color(0xFF0284C7),
+              ),
             ),
           ),
         ],
@@ -470,67 +720,145 @@ class _PortfolioScreenState extends State<PortfolioScreen> {
   }
 
   Widget _buildFriendsHorizontalList() {
-    final List<Map<String, String>> friendsCreations = [
-      {'title': "Lily's Drawing", 'image': 'assets/images/chameleon.png'},
-      {'title': "Leo's Robot", 'image': 'assets/images/build_projects.png'},
-      {'title': "Mia's Song", 'image': 'assets/images/duck_singer.png'},
-    ];
+    return Obx(() {
+      final friends = _friendsController.friendsList;
 
-    return SizedBox(
-      height: 140,
-      child: ListView.builder(
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        itemCount: friendsCreations.length,
-        itemBuilder: (context, index) {
-          final item = friendsCreations[index];
-          return Container(
-            width: 130,
-            margin: const EdgeInsets.only(right: 14),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(18),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.08),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+      if (friends.isEmpty) {
+        final List<Map<String, String>> fallbackFriends = [
+          {'title': "Lily's Drawing", 'image': 'assets/images/chameleon.png'},
+          {'title': "Leo's Robot", 'image': 'assets/images/build_projects.png'},
+          {'title': "Mia's Song", 'image': 'assets/images/duck_singer.png'},
+        ];
+
+        return SizedBox(
+          height: 140,
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            itemCount: fallbackFriends.length,
+            itemBuilder: (context, index) {
+              final item = fallbackFriends[index];
+              return Container(
+                width: 130,
+                margin: const EdgeInsets.only(right: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.08),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
-                    child: Image.asset(
-                      item['image']!,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 40),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                        child: Image.asset(
+                          item['image']!,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, __, ___) => const Icon(Icons.image, size: 40),
+                        ),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                      child: Text(
+                        item['title']!,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.comicNeue(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF334155),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+        );
+      }
+
+      return SizedBox(
+        height: 140,
+        child: ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          itemCount: friends.length,
+          itemBuilder: (context, index) {
+            final friend = friends[index];
+            final fallbackImages = [
+              'assets/images/chameleon.png',
+              'assets/images/build_projects.png',
+              'assets/images/duck_singer.png',
+              'assets/images/litto.png',
+            ];
+            final defaultImage = fallbackImages[index % fallbackImages.length];
+
+            return Container(
+              width: 130,
+              margin: const EdgeInsets.only(right: 14),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.08),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.vertical(top: Radius.circular(18)),
+                      child: (friend.profilePicture != null && friend.profilePicture!.isNotEmpty)
+                          ? Image.network(
+                              friend.profilePicture!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => Image.asset(
+                                defaultImage,
+                                fit: BoxFit.contain,
+                              ),
+                            )
+                          : Image.asset(
+                              defaultImage,
+                              fit: BoxFit.contain,
+                            ),
                     ),
                   ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                  child: Text(
-                    item['title']!,
-                    textAlign: TextAlign.center,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: GoogleFonts.comicNeue(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: const Color(0xFF334155),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                    child: Text(
+                      friend.displayName,
+                      textAlign: TextAlign.center,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.comicNeue(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF334155),
+                      ),
                     ),
                   ),
-                ),
-              ],
-            ),
-          );
-        },
-      ),
-    );
+                ],
+              ),
+            );
+          },
+        ),
+      );
+    });
   }
 
   Widget _buildStarLine() {

@@ -343,4 +343,44 @@ class AuthController extends GetxController {
       }
     }
   }
+
+  static bool _isLoggingOutDueTo401 = false;
+
+  static Future<void> handleUnauthenticated() async {
+    if (_isLoggingOutDueTo401) return;
+    _isLoggingOutDueTo401 = true;
+
+    try {
+      await SharedManager.clearAuthData();
+      Globals.currentUser = null;
+      Globals.BearerToken = null;
+
+      if (Get.isRegistered<BackgroundMusicService>()) {
+        await BackgroundMusicService.to.stopMusic();
+      }
+
+      if (Get.isRegistered<AuthController>()) {
+        final authController = Get.find<AuthController>();
+        authController.currentUser.value = null;
+        authController.isLoggedIn.value = false;
+        authController.isLoading.value = false;
+      }
+
+      if (Get.isRegistered<ProfileController>()) {
+        final profileController = Get.find<ProfileController>();
+        profileController.userProfile.value = null;
+        profileController.selectedMood.value = null;
+      }
+
+      CustomToast.showErrorToast(msg: "Session expired. Please sign in again.");
+
+      Get.offAll(() => const AuthChoiceScreen());
+    } catch (e) {
+      CommonApiClass().normalPrintJson("Error in handleUnauthenticated: $e");
+    } finally {
+      Future.delayed(const Duration(seconds: 2), () {
+        _isLoggingOutDueTo401 = false;
+      });
+    }
+  }
 }

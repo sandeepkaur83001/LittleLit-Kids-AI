@@ -43,7 +43,7 @@ class ApiService {
         Uri.parse('$_baseUrl$endpoint'),
         headers: combinedHeaders,
       );
-      _handleResponse(response);
+      _handleResponse(response, endpoint: endpoint);
       return response;
     } catch (ex) {
       CrashedApiResponse response = CrashedApiResponse(message: ex.toString());
@@ -81,7 +81,7 @@ class ApiService {
         headers: combinedHeaders,
         body: jsonEncode(jsonBody),
       );
-      _handleResponse(response);
+      _handleResponse(response, endpoint: endpoint);
       return response;
     } catch (ex) {
       CommonApiClass().normalPrintJson("API_ERROR_DATA  $ex");
@@ -120,7 +120,7 @@ class ApiService {
         headers: combinedHeaders,
         body: jsonEncode(jsonBody),
       );
-      _handleResponse(response);
+      _handleResponse(response, endpoint: endpoint);
       return response;
     } catch (ex) {
       CommonApiClass().normalPrintJson("API_ERROR_DATA  $ex");
@@ -188,7 +188,7 @@ class ApiService {
 
       final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-      _handleResponse(response);
+      _handleResponse(response, endpoint: endpoint);
       return response;
     } catch (ex) {
       CommonApiClass().normalPrintJson("API_ERROR_DATA  $ex");
@@ -239,7 +239,7 @@ class ApiService {
       }
       final response = await http.Response.fromStream(await request.send());
 
-      _handleResponse(response);
+      _handleResponse(response, endpoint: endpoint);
       return response;
     } catch (ex) {
       CommonApiClass().normalPrintJson("API_ERROR_DATA  $ex");
@@ -277,7 +277,7 @@ class ApiService {
         body: body != null ? jsonEncode(body) : null,
       );
 
-      _handleResponse(response);
+      _handleResponse(response, endpoint: endpoint);
       return response;
     } catch (ex) {
       CommonApiClass().normalPrintJson("API_ERROR_DATA  $ex");
@@ -296,30 +296,68 @@ class ApiService {
     }
   }
 
-  static void _handleResponse(http.Response response) async {
+  static void _handleResponse(http.Response response, {String? endpoint}) async {
     try {
       if (response.statusCode == 200 || response.statusCode == 201) {
-        
         CommonApiClass().normalPrintJson(
           "API_STATUS_CODE${response.statusCode}",
         );
         CommonApiClass().prettyJson(response.body);
+
+        _checkAndHandleUnauthenticated(response, endpoint);
       } else {
-     
-        if (response.statusCode == 401 &&
-            jsonDecode(response.body)["message"] == "Unauthorized") {
-          Future.delayed(Duration(seconds: 1), () {});
-        }
         CommonApiClass().normalPrintJson(
           "API_STATUS_CODE${response.statusCode}",
         );
         CommonApiClass().normalPrintJson(
           "API_RESPONSE_JSON_STRING ${response.body}",
         );
+
+        _checkAndHandleUnauthenticated(response, endpoint);
       }
     } catch (e) {
       CommonApiClass().normalPrintJson("API_ERROR_IN_DECODING$e");
     }
+  }
+
+  static void _checkAndHandleUnauthenticated(http.Response response, String? endpoint) {
+    if (endpoint != null) {
+      if (endpoint.contains(ApiEndPointConstants.login) ||
+          endpoint.contains(ApiEndPointConstants.register) ||
+          endpoint.contains(ApiEndPointConstants.socialLogin) ||
+          endpoint.contains(ApiEndPointConstants.forgotPassword) ||
+          endpoint.contains(ApiEndPointConstants.resetPassword)) {
+        return;
+      }
+    }
+
+    // Only auto-logout if user was previously authenticated with a token
+    if (Globals.BearerToken == null || Globals.BearerToken!.isEmpty) {
+      return;
+    }
+
+    try {
+      if (response.statusCode == 401) {
+        AuthController.handleUnauthenticated();
+        return;
+      }
+
+      if (response.body.isNotEmpty) {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map<String, dynamic>) {
+          final status = decoded['status'];
+          final message = decoded['message']?.toString().trim().toLowerCase();
+          if (status == 401 ||
+              status == '401' ||
+              message == 'unauthenticated.' ||
+              message == 'unauthenticated' ||
+              message == 'unauthorized.' ||
+              message == 'unauthorized') {
+            AuthController.handleUnauthenticated();
+          }
+        }
+      }
+    } catch (_) {}
   }
 
   static void showJsonDialog(BuildContext context, String formattedJson) {

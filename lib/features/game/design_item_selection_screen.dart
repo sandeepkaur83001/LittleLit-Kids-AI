@@ -244,17 +244,9 @@ class _DesignItemSelectionScreenState extends State<DesignItemSelectionScreen> {
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item['image'] ?? 'https://picsum.photos/400/400',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                alignment: Alignment.center,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  );
-                },
+              child: AppCardImage(
+                imageUrl: item['image'],
+                fallbackIcon: Icons.draw_outlined,
               ),
             ),
           ),

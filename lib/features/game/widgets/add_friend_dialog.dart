@@ -2,16 +2,19 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:get/get.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:little_kids_ai/features/game/controllers/friends_controller.dart';
 
 class AddFriendDialog extends StatefulWidget {
-  final String mySecretKey;
+  final String? mySecretKey;
 
   const AddFriendDialog({
     super.key,
-    this.mySecretKey = 'Test473',
+    this.mySecretKey,
   });
 
-  static void show(BuildContext context, {String mySecretKey = 'Test473'}) {
+  static void show(BuildContext context, {String? mySecretKey}) {
     showDialog(
       context: context,
       barrierDismissible: true,
@@ -27,38 +30,41 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
   final TextEditingController _keyController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    Get.find<FriendsController>().fetchPendingRequests();
+  }
+
+  @override
   void dispose() {
     _keyController.dispose();
     super.dispose();
   }
 
-  void _submitKey() {
+  void _submitKey() async {
     final text = _keyController.text.trim();
     if (text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Please enter your friend\'s secret key'),
+          content: Text("Please enter your friend's secret key"),
           duration: Duration(seconds: 2),
         ),
       );
       return;
     }
 
-    Navigator.pop(context);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Friend with key "$text" added successfully!'),
-        backgroundColor: const Color(0xFF2E7D32),
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    final friendsController = Get.find<FriendsController>();
+    final success = await friendsController.sendFriendRequest(text);
+    if (success && mounted) {
+      Navigator.pop(context);
+    }
   }
 
-  void _shareSecretKey() {
-    Clipboard.setData(ClipboardData(text: widget.mySecretKey));
+  void _shareSecretKey(String key) {
+    Clipboard.setData(ClipboardData(text: key));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Secret key "${widget.mySecretKey}" copied to clipboard!'),
+        content: Text('Secret key "$key" copied to clipboard!'),
         backgroundColor: const Color(0xFF0284C7),
         duration: const Duration(seconds: 2),
       ),
@@ -70,6 +76,8 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
     final mediaQuery = MediaQuery.of(context);
     final isTablet = mediaQuery.size.shortestSide >= 600;
     final screenWidth = mediaQuery.size.width;
+    final friendsController = Get.find<FriendsController>();
+    final effectiveSecretKey = widget.mySecretKey ?? friendsController.mySecretKey;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -153,23 +161,34 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                     const SizedBox(height: 10),
 
                     // Circular Check Button
-                    GestureDetector(
-                      onTap: _submitKey,
-                      child: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFC8E6C9).withOpacity(0.75),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.6), width: 1.5),
+                    Obx(() {
+                      final isSubmitting = friendsController.isSubmitting.value;
+                      return GestureDetector(
+                        onTap: isSubmitting ? null : _submitKey,
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFC8E6C9).withOpacity(0.75),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white.withOpacity(0.6), width: 1.5),
+                          ),
+                          child: isSubmitting
+                              ? const Center(
+                                  child: SpinKitRing(
+                                    color: Color(0xFF2E7D32),
+                                    size: 20,
+                                    lineWidth: 2.5,
+                                  ),
+                                )
+                              : const Icon(
+                                  Icons.check_rounded,
+                                  color: Color(0xFF2E7D32),
+                                  size: 26,
+                                ),
                         ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          color: Color(0xFF2E7D32),
-                          size: 26,
-                        ),
-                      ),
-                    ),
+                      );
+                    }),
                     const SizedBox(height: 8),
 
                     // Bottom Row: Magic Key + Yellow Secret Key Box (closely attached)
@@ -225,7 +244,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: Text(
-                                    widget.mySecretKey,
+                                    effectiveSecretKey,
                                     style: GoogleFonts.comicNeue(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
@@ -236,7 +255,7 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                                 const SizedBox(height: 6),
                                 // Share Button
                                 GestureDetector(
-                                  onTap: _shareSecretKey,
+                                  onTap: () => _shareSecretKey(effectiveSecretKey),
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
                                     decoration: BoxDecoration(
@@ -270,6 +289,9 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
                         ),
                       ],
                     ),
+
+                    // Incoming Friend Requests if any
+                    _buildPendingRequestsList(friendsController),
                   ],
                 ),
 
@@ -300,5 +322,141 @@ class _AddFriendDialogState extends State<AddFriendDialog> {
         ),
       ),
     );
+  }
+
+  Widget _buildPendingRequestsList(FriendsController friendsController) {
+    return Obx(() {
+      final requests = friendsController.pendingRequests;
+      if (requests.isEmpty) {
+        return const SizedBox.shrink();
+      }
+
+      return Container(
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.mark_email_unread_rounded, color: Color(0xFFF59E0B), size: 18),
+                const SizedBox(width: 6),
+                Text(
+                  'Pending Invitations (${requests.length})',
+                  style: GoogleFonts.comicNeue(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF1E293B),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ...requests.map((req) {
+              final userId = req.userId ?? req.id;
+              return Container(
+                margin: const EdgeInsets.only(bottom: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFEF9C3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            req.displayName,
+                            style: GoogleFonts.comicNeue(
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF1E293B),
+                            ),
+                          ),
+                          if (req.secretKey != null && req.secretKey!.isNotEmpty)
+                            Text(
+                              '#${req.secretKey}',
+                              style: GoogleFonts.comicNeue(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: const Color(0xFF854D0E),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    // Accept button
+                    GestureDetector(
+                      onTap: () {
+                        if (userId != null) {
+                          friendsController.acceptRequest(userId);
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF22C55E),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.check_rounded, color: Colors.white, size: 14),
+                            const SizedBox(width: 2),
+                            Text(
+                              'Accept',
+                              style: GoogleFonts.comicNeue(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 11,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    // Decline button
+                    GestureDetector(
+                      onTap: () {
+                        if (userId != null) {
+                          friendsController.rejectRequest(userId);
+                        }
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(5),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFEF4444).withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: Color(0xFFEF4444),
+                          size: 16,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }),
+          ],
+        ),
+      );
+    });
   }
 }

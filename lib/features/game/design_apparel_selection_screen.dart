@@ -1,43 +1,49 @@
 import 'dart:math' as math;
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:get/get.dart';
+import 'package:little_kids_ai/features/game/controllers/categories_controller.dart';
 import 'package:little_kids_ai/features/game/design_theme_selection_screen.dart';
 
 class DesignApparelSelectionScreen extends StatefulWidget {
-  const DesignApparelSelectionScreen({super.key});
+  final CategoryModel? category;
+  const DesignApparelSelectionScreen({super.key, this.category});
 
   @override
   State<DesignApparelSelectionScreen> createState() => _DesignApparelSelectionScreenState();
 }
 
 class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScreen> {
-  late PageController _pageController;
-  double _currentPage = 2.0;
+  final CategoriesController _categoriesController = Get.find<CategoriesController>();
 
-  final List<Map<String, dynamic>> _designCards = [
+  final List<Map<String, dynamic>> _fallbackDesignCards = [
     {
-      'title': 'Design Shoes, Bottles, Hats',
-      'image': 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+      'title': 'Animal Kingdom',
+      'image': 'assets/images/animal_kingdom.png',
     },
     {
-      'title': 'Decorate yummy cakes',
-      'image': 'https://images.unsplash.com/photo-1535141192574-5d4897c13136?w=600&auto=format&fit=crop&q=80',
+      'title': 'Birthday',
+      'image': 'assets/images/birthday.png',
     },
     {
-      'title': 'Make a fun card',
-      'image': 'https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600&auto=format&fit=crop&q=80',
+      'title': 'Boats',
+      'image': 'assets/images/boats.png',
     },
     {
-      'title': 'Design Tshirts n more',
-      'image': 'https://images.unsplash.com/photo-1503919545889-aef636e10ad4?w=600&auto=format&fit=crop&q=80',
+      'title': 'Christmas',
+      'image': 'assets/images/christmas.png',
     },
     {
-      'title': 'Decorate Christmas Tree',
-      'image': 'https://images.unsplash.com/photo-1543258103-a62bdc069871?w=600&auto=format&fit=crop&q=80',
+      'title': 'Community Helpers',
+      'image': 'assets/images/community_helpers.png',
     },
     {
-      'title': 'Design cool backpacks',
-      'image': 'https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop&q=80',
+      'title': 'Farm',
+      'image': 'assets/images/farm.png',
+    },
+    {
+      'title': 'Fruits & Vegetables',
+      'image': 'assets/images/fruits_vegetables.png',
     },
     {
       'title': 'Your idea',
@@ -45,9 +51,15 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
     },
   ];
 
+  late PageController _pageController;
+  double _currentPage = 2.0;
+
   @override
   void initState() {
     super.initState();
+    if (Globals.BearerToken != null && Globals.BearerToken!.isNotEmpty && _categoriesController.categoryList.isEmpty) {
+      _categoriesController.fetchCategories();
+    }
     const double viewportFraction = 0.185;
     _pageController = PageController(
       initialPage: 2,
@@ -68,6 +80,39 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  CategoryModel? _findParentCategory() {
+    if (widget.category != null && widget.category!.children != null && widget.category!.children!.isNotEmpty) {
+      return widget.category;
+    }
+    final serverCategories = _categoriesController.categoryList;
+    if (serverCategories.isNotEmpty) {
+      return serverCategories.firstWhereOrNull((c) {
+        final cName = (c.name ?? '').toLowerCase();
+        final cSlug = (c.slug ?? '').toLowerCase();
+        return cSlug.contains('stuff') || cName.contains('stuff') || (c.id == 33);
+      });
+    }
+    return null;
+  }
+
+  List<Map<String, dynamic>> _getEffectiveCards() {
+    final parent = _findParentCategory();
+    final children = parent?.children;
+    if (children != null && children.isNotEmpty) {
+      return children.map((c) {
+        final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your idea' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        return {
+          'id': c.id,
+          'title': c.name ?? '',
+          'image': c.iconUrl ?? c.icon ?? '',
+          'isSpecial': isSpecial,
+          'model': c,
+        };
+      }).toList();
+    }
+    return _fallbackDesignCards;
   }
 
   void _onDesignCardSelected(Map<String, dynamic> card) {
@@ -102,9 +147,11 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
                       final double itemWidth = slotWidth + 1.0;
                       final double itemHeight = math.min(itemWidth * 1.38, math.min(constraints.maxHeight * 0.80, 280.0));
 
+                      final effectiveCards = _getEffectiveCards();
+
                       return PageView.builder(
                         controller: _pageController,
-                        itemCount: _designCards.length,
+                        itemCount: effectiveCards.length,
                         physics: const BouncingScrollPhysics(),
                         padEnds: true,
                         clipBehavior: Clip.none,
@@ -136,7 +183,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
                                         behavior: HitTestBehavior.opaque,
                                         onTap: () {
                                           if (isSelected) {
-                                            _onDesignCardSelected(_designCards[index]);
+                                            _onDesignCardSelected(effectiveCards[index]);
                                           } else {
                                             _pageController.animateToPage(
                                               index,
@@ -145,7 +192,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
                                             );
                                           }
                                         },
-                                        child: _buildDesignCard(_designCards[index], isSelected),
+                                        child: _buildDesignCard(effectiveCards[index], isSelected),
                                       ),
                                     ),
                                   ),
@@ -267,18 +314,7 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                item['image'] ?? 'https://picsum.photos/400/400',
-                fit: BoxFit.cover,
-                width: double.infinity,
-                alignment: Alignment.center,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  );
-                },
-              ),
+              child: _buildCardImage(item['image']),
             ),
           ),
           Container(
@@ -387,6 +423,13 @@ class _DesignApparelSelectionScreenState extends State<DesignApparelSelectionScr
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildCardImage(String? imagePath) {
+    return AppCardImage(
+      imageUrl: imagePath,
+      fallbackIcon: Icons.checkroom_outlined,
     );
   }
 }

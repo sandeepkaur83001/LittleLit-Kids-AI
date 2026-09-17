@@ -1,22 +1,27 @@
 import 'package:little_kids_ai/core/common_imports.dart';
 import 'package:little_kids_ai/features/game/widgets/game_background.dart';
+import 'package:get/get.dart';
+import 'package:little_kids_ai/features/game/controllers/categories_controller.dart';
 import 'package:little_kids_ai/features/game/subscription_screen.dart';
 
 class TuneSelectionScreen extends StatefulWidget {
-  const TuneSelectionScreen({super.key});
+  final CategoryModel? category;
+  const TuneSelectionScreen({super.key, this.category});
 
   @override
   State<TuneSelectionScreen> createState() => _TuneSelectionScreenState();
 }
 
 class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
-  final List<Map<String, String>> tunes = [
-    {'title': 'Twinkle Twinkle', 'id': '1'},
-    {'title': 'Baby Shark', 'id': '2'},
-    {'title': 'Mary Had a Little Lamb', 'id': '3'},
-    {'title': 'Old MacDonald', 'id': '4'},
-    {'title': 'Wheels on the Bus', 'id': '5'},
-    {'title': 'Row Row Row Your Boat', 'id': '6'},
+  final CategoriesController _categoriesController = Get.find<CategoriesController>();
+
+  final List<Map<String, String>> _fallbackTunes = [
+    {'title': 'Itsy Bitsy Spider', 'id': '52'},
+    {'title': 'Five Little Monkeys', 'id': '53'},
+    {'title': 'Twinkle Twinkle', 'id': '54'},
+    {'title': 'Baby Shark', 'id': '55'},
+    {'title': 'Mary Had a Little Lamb', 'id': '56'},
+    {'title': 'ABCDEFG', 'id': '57'},
   ];
 
   late PageController _pageController;
@@ -26,6 +31,9 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
   @override
   void initState() {
     super.initState();
+    if (Globals.BearerToken != null && Globals.BearerToken!.isNotEmpty && _categoriesController.categoryList.isEmpty) {
+      _categoriesController.fetchCategories();
+    }
     _pageController = PageController(
       initialPage: 1,
       viewportFraction: 0.28,
@@ -45,6 +53,35 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  CategoryModel? _findParentCategory() {
+    if (widget.category != null && widget.category!.children != null && widget.category!.children!.isNotEmpty) {
+      return widget.category;
+    }
+    final serverCategories = _categoriesController.categoryList;
+    if (serverCategories.isNotEmpty) {
+      return serverCategories.firstWhereOrNull((c) {
+        final cName = (c.name ?? '').toLowerCase();
+        final cSlug = (c.slug ?? '').toLowerCase();
+        return cSlug.contains('song') || cName.contains('song') || (c.id == 51);
+      });
+    }
+    return null;
+  }
+
+  List<Map<String, String>> _getEffectiveTunes() {
+    final parent = _findParentCategory();
+    final children = parent?.children;
+    if (children != null && children.isNotEmpty) {
+      return children.map((c) {
+        return {
+          'title': c.name ?? '',
+          'id': (c.id ?? 1).toString(),
+        };
+      }).toList();
+    }
+    return _fallbackTunes;
   }
 
   void _onTuneCardTapped(int index) {
@@ -110,9 +147,11 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
                         width: MediaQuery.of(context).size.width * 0.76,
                         child: LayoutBuilder(
                           builder: (context, constraints) {
+                            final effectiveTunes = _getEffectiveTunes();
+
                             return PageView.builder(
                               controller: _pageController,
-                              itemCount: tunes.length,
+                              itemCount: effectiveTunes.length,
                               physics: const BouncingScrollPhysics(),
                               padEnds: false,
                               clipBehavior: Clip.none,
@@ -137,7 +176,7 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
                                         child: GestureDetector(
                                           behavior: HitTestBehavior.opaque,
                                           onTap: () => _onTuneCardTapped(index),
-                                          child: _buildTuneCard(tunes[index], isSelected),
+                                          child: _buildTuneCard(effectiveTunes[index], isSelected),
                                         ),
                                       ),
                                     );

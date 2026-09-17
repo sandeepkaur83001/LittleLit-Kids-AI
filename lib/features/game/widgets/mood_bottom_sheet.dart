@@ -168,8 +168,6 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
     final bool isSelected = _selectedMoodIndex == index;
     final bool hasSelection = _selectedMoodIndex != null;
     final double itemOpacity = hasSelection ? (isSelected ? 1.0 : 0.35) : 1.0;
-    final double rotation = (fallbackMood['rotation'] as double?) ?? 0.0;
-    final String label = apiMood?.name?.toUpperCase() ?? (fallbackMood['label'] as String);
     final String? iconUrl = apiMood?.iconUrl;
     final String fallbackAsset = fallbackMood['image'] as String;
 
@@ -201,25 +199,9 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Emotion Label with dynamic tilt/rotation
-                    Transform.rotate(
-                      angle: rotation,
-                      child: Text(
-                        label,
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.comicNeue(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.black,
-                          letterSpacing: 0.4,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-
-                    // Character Image with compact height (API network image with local fallback)
+                    // Character Image with increased height (API network image with local fallback)
                     SizedBox(
-                      height: 68,
+                      height: 96,
                       child: (iconUrl != null && iconUrl.isNotEmpty)
                           ? Image.network(
                               iconUrl,
@@ -230,13 +212,13 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                                 fit: BoxFit.contain,
                                 alignment: Alignment.bottomCenter,
                                 errorBuilder: (context, error, stackTrace) => Container(
-                                  height: 60,
-                                  width: 40,
+                                  height: 80,
+                                  width: 50,
                                   decoration: BoxDecoration(
                                     color: Colors.teal.shade200,
                                     borderRadius: BorderRadius.circular(20),
                                   ),
-                                  child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+                                  child: const Icon(Icons.music_note, color: Colors.white, size: 28),
                                 ),
                               ),
                             )
@@ -245,13 +227,13 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                               fit: BoxFit.contain,
                               alignment: Alignment.bottomCenter,
                               errorBuilder: (context, error, stackTrace) => Container(
-                                height: 60,
-                                width: 40,
+                                height: 80,
+                                width: 50,
                                 decoration: BoxDecoration(
                                   color: Colors.teal.shade200,
                                   borderRadius: BorderRadius.circular(20),
                                 ),
-                                child: const Icon(Icons.music_note, color: Colors.white, size: 24),
+                                child: const Icon(Icons.music_note, color: Colors.white, size: 28),
                               ),
                             ),
                     ),

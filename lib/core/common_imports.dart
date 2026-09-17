@@ -58,11 +58,16 @@ export 'package:little_kids_ai/widgets/common/privacy_policy_widget.dart';
 export 'package:little_kids_ai/widgets/common/sub_tab.dart';
 export 'package:little_kids_ai/widgets/common/network_image_view.dart';
 export 'package:little_kids_ai/widgets/common/empty_state_widget.dart';
+export 'package:little_kids_ai/widgets/common/app_card_image.dart';
 
 // Models
 export 'package:little_kids_ai/models/base_model.dart';
 export 'package:little_kids_ai/models/user_model.dart';
 export 'package:little_kids_ai/models/mood_model.dart';
+export 'package:little_kids_ai/models/category_model.dart';
+export 'package:little_kids_ai/models/interest_model.dart';
+export 'package:little_kids_ai/models/skill_model.dart';
+export 'package:little_kids_ai/models/friend_model.dart';
 
 // Features - Auth & Profile
 export 'package:little_kids_ai/features/auth/services/auth_api_service.dart';
