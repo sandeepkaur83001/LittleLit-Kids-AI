@@ -100,8 +100,13 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
     final parent = _findParentCategory();
     final children = parent?.children;
     if (children != null && children.isNotEmpty) {
+      final sharedChildren = children.firstWhereOrNull((c) => c.children != null && c.children!.isNotEmpty)?.children;
+
       return children.map((c) {
         final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        if ((c.children == null || c.children!.isEmpty) && sharedChildren != null && sharedChildren.isNotEmpty) {
+          c.children = sharedChildren;
+        }
         return {
           'id': c.id,
           'title': c.name ?? '',
@@ -116,11 +121,6 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
 
   void _onThemeSelected(Map<String, dynamic> theme) {
     final model = theme['model'] as CategoryModel?;
-    final children = model?.children;
-    if (children == null || children.isEmpty) {
-      CustomToast.showToast(message: 'Coming Soon');
-      return;
-    }
 
     Navigator.push(
       context,

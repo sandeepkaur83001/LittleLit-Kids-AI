@@ -117,14 +117,26 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
     final parent = _findParentCategory();
     final children = parent?.children;
     if (children != null && children.isNotEmpty) {
+      final sharedChild = children.firstWhereOrNull((c) => c.children != null && c.children!.isNotEmpty);
+      final sharedChildren = sharedChild?.children;
+      final defaultDrawings = (sharedChildren != null && sharedChildren.isNotEmpty)
+          ? sharedChildren.map((child) => DrawingItem(
+              title: child.name ?? '',
+              image: child.iconUrl ?? child.icon ?? child.image ?? '',
+            )).toList()
+          : <DrawingItem>[];
+
       return children.map((c) {
         final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        if ((c.children == null || c.children!.isEmpty) && sharedChildren != null && sharedChildren.isNotEmpty) {
+          c.children = sharedChildren;
+        }
         final drawings = (c.children != null && c.children!.isNotEmpty)
             ? c.children!.map((child) => DrawingItem(
                 title: child.name ?? '',
                 image: child.iconUrl ?? child.icon ?? child.image ?? '',
               )).toList()
-            : <DrawingItem>[];
+            : defaultDrawings;
         return ColoringTheme(
           title: c.name ?? '',
           coverImage: c.iconUrl ?? c.icon ?? c.image ?? '',
@@ -168,12 +180,6 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
   }
 
   void _onThemeSelected(ColoringTheme theme) {
-    final children = theme.category?.children;
-    if (children == null || children.isEmpty) {
-      CustomToast.showToast(message: 'Coming Soon');
-      return;
-    }
-
     Navigator.push(
       context,
       MaterialPageRoute(
