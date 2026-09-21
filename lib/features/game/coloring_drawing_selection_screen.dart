@@ -55,11 +55,13 @@ class DrawingItem {
 class ColoringDrawingSelectionScreen extends StatefulWidget {
   final String themeName;
   final List<DrawingItem> drawings;
+  final CategoryModel? category;
 
   const ColoringDrawingSelectionScreen({
     super.key,
     required this.themeName,
     required this.drawings,
+    this.category,
   });
 
   @override
@@ -118,10 +120,18 @@ class _ColoringDrawingSelectionScreenState extends State<ColoringDrawingSelectio
   @override
   void initState() {
     super.initState();
-    _items = _themeDrawingsMap[widget.themeName] ??
-        (widget.drawings.isNotEmpty
-            ? widget.drawings
-            : _themeDrawingsMap['Christmas']!);
+    if (widget.category?.children != null && widget.category!.children!.isNotEmpty) {
+      _items = widget.category!.children!.map((c) {
+        return DrawingItem(
+          title: c.name ?? '',
+          image: c.iconUrl ?? c.icon ?? c.image ?? '',
+        );
+      }).toList();
+    } else if (widget.drawings.isNotEmpty) {
+      _items = widget.drawings;
+    } else {
+      _items = _themeDrawingsMap[widget.themeName] ?? _themeDrawingsMap['Christmas']!;
+    }
 
     final initial = (_items.length / 2).floor();
     _currentPage = initial.toDouble();
@@ -312,13 +322,19 @@ class _ColoringDrawingSelectionScreenState extends State<ColoringDrawingSelectio
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(14.0),
+        padding: const EdgeInsets.all(12.0),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
-          child: CustomPaint(
-            painter: LineDrawingPainter(type: item.type),
-            size: Size.infinite,
-          ),
+          child: (item.image.isNotEmpty && (item.image.startsWith('http') || item.image.startsWith('assets/')))
+              ? AppCardImage(
+                  imageUrl: item.image,
+                  fit: BoxFit.contain,
+                  fallbackIcon: Icons.palette_outlined,
+                )
+              : CustomPaint(
+                  painter: LineDrawingPainter(type: item.type),
+                  size: Size.infinite,
+                ),
         ),
       ),
     );

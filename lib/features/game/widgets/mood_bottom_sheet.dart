@@ -117,7 +117,7 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                   alignment: Alignment.bottomCenter,
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(16, 6, 16, 8),
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
               child: Column(
                 children: [
                   // Header Title Text on Mood Background
@@ -134,27 +134,35 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                       ),
                     ),
                   ),
-                  // const Spacer(),
-                  const SizedBox(height: 40),
+                  // const SizedBox(height: 8),
 
-                  // 6 Mood Emotion Characters Row
-                  Obx(() {
-                    final profileController = Get.find<ProfileController>();
-                    final apiMoods = profileController.moodList;
+                  // 6 Mood Emotion Characters Row (Dynamic sizing to fill space and remove empty top gap)
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final double availableH = constraints.maxHeight;
+                        final double charHeight = (availableH - 36).clamp(85.0, 140.0);
 
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: List.generate(_moods.length, (index) {
-                        final fallbackMood = _moods[index];
-                        final moodId = (fallbackMood['id'] as int?) ?? (index + 1);
-                        final MoodModel? apiMood = apiMoods.firstWhereOrNull((m) => m.id == moodId);
+                        return Obx(() {
+                          final profileController = Get.find<ProfileController>();
+                          final apiMoods = profileController.moodList;
 
-                        return _buildMoodItem(index, fallbackMood, apiMood);
-                      }),
-                    );
-                  }),
-                  const SizedBox(height: 4),
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: List.generate(_moods.length, (index) {
+                              final fallbackMood = _moods[index];
+                              final moodId = (fallbackMood['id'] as int?) ?? (index + 1);
+                              final MoodModel? apiMood = apiMoods.firstWhereOrNull((m) => m.id == moodId);
+
+                              return _buildMoodItem(index, fallbackMood, apiMood, charHeight);
+                            }),
+                          );
+                        });
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 6),
                 ],
               ),
             ),
@@ -164,12 +172,17 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
     );
   }
 
-  Widget _buildMoodItem(int index, Map<String, dynamic> fallbackMood, MoodModel? apiMood) {
+  Widget _buildMoodItem(int index, Map<String, dynamic> fallbackMood, MoodModel? apiMood, double charHeight) {
     final bool isSelected = _selectedMoodIndex == index;
     final bool hasSelection = _selectedMoodIndex != null;
     final double itemOpacity = hasSelection ? (isSelected ? 1.0 : 0.35) : 1.0;
     final String? iconUrl = apiMood?.iconUrl;
     final String fallbackAsset = fallbackMood['image'] as String;
+    final double rotation = (fallbackMood['rotation'] as double?) ?? 0.0;
+    final String rawLabel = (apiMood?.name != null && apiMood!.name!.isNotEmpty)
+        ? apiMood.name!
+        : (fallbackMood['label'] as String? ?? '');
+    final String moodLabel = rawLabel.toUpperCase();
 
     return Expanded(
       child: GestureDetector(
@@ -187,10 +200,10 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
               final double progress = (_zoomController.value + pulseOffset) % 1.0;
               final double bounceFactor = 1.0 - (progress - 0.5).abs() * 2.0;
               final double scale = isSelected
-                  ? 1.10 + (0.12 * bounceFactor) // Selected character continues to pop up and pulse actively
+                  ? 1.10 + (0.08 * bounceFactor) // Selected character continues to pop up and pulse actively
                   : (hasSelection
-                      ? 0.90 + (0.05 * bounceFactor) // Other characters continue subtle breathing
-                      : 0.94 + (0.08 * bounceFactor)); // Default idle breathing
+                      ? 0.92 + (0.04 * bounceFactor) // Other characters continue subtle breathing
+                      : 0.95 + (0.06 * bounceFactor)); // Default idle breathing
 
               return Transform.scale(
                 scale: scale,
@@ -199,9 +212,27 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                   mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    // Character Image with increased height (API network image with local fallback)
+                    // Top Mood Emotion Label Text (Animates together with character)
+                    Transform.rotate(
+                      angle: rotation,
+                      child: Text(
+                        moodLabel,
+                        textAlign: TextAlign.center,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: GoogleFonts.comicNeue(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: isSelected ? const Color(0xFF1E293B) : Colors.black87,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+
+                    // Character Image with increased dynamic height
                     SizedBox(
-                      height: 96,
+                      height: charHeight,
                       child: (iconUrl != null && iconUrl.isNotEmpty)
                           ? Image.network(
                               iconUrl,
@@ -212,7 +243,7 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                                 fit: BoxFit.contain,
                                 alignment: Alignment.bottomCenter,
                                 errorBuilder: (context, error, stackTrace) => Container(
-                                  height: 80,
+                                  height: charHeight,
                                   width: 50,
                                   decoration: BoxDecoration(
                                     color: Colors.teal.shade200,
@@ -227,7 +258,7 @@ class _MoodBottomSheetState extends State<MoodBottomSheet> with SingleTickerProv
                               fit: BoxFit.contain,
                               alignment: Alignment.bottomCenter,
                               errorBuilder: (context, error, stackTrace) => Container(
-                                height: 80,
+                                height: charHeight,
                                 width: 50,
                                 decoration: BoxDecoration(
                                   color: Colors.teal.shade200,

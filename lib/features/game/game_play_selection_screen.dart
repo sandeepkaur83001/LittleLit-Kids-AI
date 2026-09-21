@@ -6,11 +6,13 @@ import 'package:little_kids_ai/features/game/subscription_screen.dart';
 class GamePlaySelectionScreen extends StatefulWidget {
   final String selectedThemeTitle;
   final String? selectedThemeImage;
+  final CategoryModel? category;
 
   const GamePlaySelectionScreen({
     super.key,
     this.selectedThemeTitle = 'Animal Kingdom',
     this.selectedThemeImage,
+    this.category,
   });
 
   @override
@@ -18,7 +20,7 @@ class GamePlaySelectionScreen extends StatefulWidget {
 }
 
 class _GamePlaySelectionScreenState extends State<GamePlaySelectionScreen> {
-  final List<Map<String, dynamic>> _gameCards = const [
+  final List<Map<String, dynamic>> _fallbackGameCards = const [
     {
       'title': 'MatchIt',
       'asset': 'assets/images/src_assets_icons_g_match_it.png',
@@ -37,22 +39,51 @@ class _GamePlaySelectionScreenState extends State<GamePlaySelectionScreen> {
     },
   ];
 
+  late List<Map<String, dynamic>> _gameCards;
   late PageController _pageController;
   double _currentPage = 2.0; // Focus on 'Puzzelo' by default
 
   @override
   void initState() {
     super.initState();
+    if (widget.category?.children != null && widget.category!.children!.isNotEmpty) {
+      _gameCards = widget.category!.children!.map((c) {
+        final title = c.name ?? '';
+        final slug = (c.slug ?? title).toLowerCase();
+        String fallback = 'assets/images/src_assets_icons_g_puzzelo.png';
+        if (slug.contains('match')) {
+          fallback = 'assets/images/src_assets_icons_g_match_it.png';
+        } else if (slug.contains('spot') || slug.contains('pop')) {
+          fallback = 'assets/images/src_assets_icons_g_spotnpop.png';
+        } else if (slug.contains('puzzel') || slug.contains('puzzle')) {
+          fallback = 'assets/images/src_assets_icons_g_puzzelo.png';
+        } else if (slug.contains('word') || slug.contains('shuffle')) {
+          fallback = 'assets/images/src_assets_icons_g_word_shuffle.png';
+        }
+        return {
+          'title': title,
+          'image': c.iconUrl ?? c.icon ?? c.image ?? '',
+          'asset': fallback,
+          'fallbackAsset': fallback,
+          'model': c,
+        };
+      }).toList();
+    } else {
+      _gameCards = _fallbackGameCards;
+    }
+
+    final initial = (_gameCards.length > 2) ? 2 : 0;
+    _currentPage = initial.toDouble();
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 2,
+      initialPage: initial,
       viewportFraction: viewportFraction,
     );
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 2.0;
+          _currentPage = _pageController.page ?? initial.toDouble();
         });
       }
     });
@@ -139,10 +170,7 @@ class _GamePlaySelectionScreenState extends State<GamePlaySelectionScreen> {
                                             );
                                           }
                                         },
-                                        child: Image.asset(
-                                          _gameCards[index]['asset'],
-                                          fit: BoxFit.fill,
-                                        ),
+                                        child: _buildGameCard(_gameCards[index], isSelected),
                                       ),
                                     ),
                                   ),
@@ -331,6 +359,56 @@ class _GamePlaySelectionScreenState extends State<GamePlaySelectionScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildGameCard(Map<String, dynamic> card, bool isSelected) {
+    final cardImage = card['image'] as String?;
+    final fallbackAsset = card['fallbackAsset'] as String? ?? card['asset'] as String?;
+
+    return Container(
+      padding: const EdgeInsets.fromLTRB(6, 6, 6, 8),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(10),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(isSelected ? 0.22 : 0.04),
+            blurRadius: isSelected ? 18 : 3,
+            spreadRadius: isSelected ? 2 : 0,
+            offset: Offset(0, isSelected ? 8 : 1),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Expanded(
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: AppCardImage(
+                imageUrl: cardImage,
+                fallbackAsset: fallbackAsset,
+                fallbackIcon: Icons.extension_outlined,
+              ),
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.only(top: 6, bottom: 2, left: 2, right: 2),
+            alignment: Alignment.center,
+            child: Text(
+              card['title'] ?? '',
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: GoogleFonts.nunito(
+                fontSize: isSelected ? 15 : 13.5,
+                fontWeight: FontWeight.w800,
+                color: const Color(0xFF1E293B),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

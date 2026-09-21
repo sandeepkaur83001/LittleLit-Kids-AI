@@ -52,7 +52,7 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
   ];
 
   late PageController _pageController;
-  double _currentPage = 2.0;
+  double _currentPage = 0.0;
 
   @override
   void initState() {
@@ -62,14 +62,14 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
     }
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 2,
+      initialPage: 0,
       viewportFraction: viewportFraction,
     );
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 2.0;
+          _currentPage = _pageController.page ?? 0.0;
         });
       }
     });
@@ -90,7 +90,7 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
       return serverCategories.firstWhereOrNull((c) {
         final cName = (c.name ?? '').toLowerCase();
         final cSlug = (c.slug ?? '').toLowerCase();
-        return cSlug.contains('puzzle') || cName.contains('puzzle') || (c.id == 15);
+        return cSlug.contains('puzzle') || cName.contains('puzzle') || (c.id == 24 || c.id == 15);
       });
     }
     return null;
@@ -105,7 +105,7 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
         return {
           'id': c.id,
           'title': c.name ?? '',
-          'image': c.iconUrl ?? c.icon ?? '',
+          'image': c.iconUrl ?? c.icon ?? c.image ?? '',
           'isSpecial': isSpecial,
           'model': c,
         };
@@ -115,12 +115,20 @@ class _PuzzleThemeSelectionScreenState extends State<PuzzleThemeSelectionScreen>
   }
 
   void _onThemeSelected(Map<String, dynamic> theme) {
+    final model = theme['model'] as CategoryModel?;
+    final children = model?.children;
+    if (children == null || children.isEmpty) {
+      CustomToast.showToast(message: 'Coming Soon');
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => GamePlaySelectionScreen(
-          selectedThemeTitle: theme['title'] ?? 'Animal Kingdom',
+          selectedThemeTitle: theme['title'] ?? 'Boats',
           selectedThemeImage: theme['image'],
+          category: model,
         ),
       ),
     );

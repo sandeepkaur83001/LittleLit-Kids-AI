@@ -126,6 +126,45 @@ class CategoryModel {
     return false;
   }
 
+  String get displayImage {
+    if (image != null && image!.isNotEmpty) return image!;
+    if (iconUrl != null && iconUrl!.isNotEmpty) return iconUrl!;
+    if (icon != null && icon!.isNotEmpty) return icon!;
+    return '';
+  }
+
+  CategoryModel copyWith({
+    int? id,
+    String? name,
+    String? slug,
+    String? description,
+    String? image,
+    String? icon,
+    String? iconUrl,
+    int? parentId,
+    int? sortOrder,
+    bool? isActive,
+    bool? isSelected,
+    bool? isSpecial,
+    List<CategoryModel>? children,
+  }) {
+    return CategoryModel(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      slug: slug ?? this.slug,
+      description: description ?? this.description,
+      image: image ?? this.image,
+      icon: icon ?? this.icon,
+      iconUrl: iconUrl ?? this.iconUrl,
+      parentId: parentId ?? this.parentId,
+      sortOrder: sortOrder ?? this.sortOrder,
+      isActive: isActive ?? this.isActive,
+      isSelected: isSelected ?? this.isSelected,
+      isSpecial: isSpecial ?? this.isSpecial,
+      children: children ?? this.children,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['id'] = id;

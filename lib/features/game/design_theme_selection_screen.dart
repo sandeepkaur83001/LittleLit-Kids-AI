@@ -6,11 +6,13 @@ import 'package:little_kids_ai/features/game/subscription_screen.dart';
 class DesignThemeSelectionScreen extends StatefulWidget {
   final String selectedDesignTitle;
   final String? selectedDesignImage;
+  final CategoryModel? category;
 
   const DesignThemeSelectionScreen({
     super.key,
     this.selectedDesignTitle = 'Make a fun card',
     this.selectedDesignImage,
+    this.category,
   });
 
   @override
@@ -18,7 +20,7 @@ class DesignThemeSelectionScreen extends StatefulWidget {
 }
 
 class _DesignThemeSelectionScreenState extends State<DesignThemeSelectionScreen> {
-  final List<Map<String, dynamic>> themes = [
+  final List<Map<String, dynamic>> _fallbackThemes = [
     {
       'title': 'Boats',
       'image': 'https://picsum.photos/400/400?random=41',
@@ -45,22 +47,46 @@ class _DesignThemeSelectionScreenState extends State<DesignThemeSelectionScreen>
     },
   ];
 
+  late List<Map<String, dynamic>> themes;
   late PageController _pageController;
   double _currentPage = 3.0; // Focus on 'Animal Kingdom'
 
   @override
   void initState() {
     super.initState();
+    if (widget.category?.children != null && widget.category!.children!.isNotEmpty) {
+      final list = widget.category!.children!.map((c) {
+        final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your idea' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        return {
+          'id': c.id,
+          'title': c.name ?? '',
+          'image': c.iconUrl ?? c.icon ?? c.image ?? '',
+          'isSpecial': isSpecial,
+          'model': c,
+        };
+      }).toList();
+
+      if (!list.any((item) => item['isSpecial'] == true)) {
+        final middleIndex = (list.length / 2).floor();
+        list.insert(middleIndex, {'title': 'Your theme', 'isSpecial': true});
+      }
+      themes = list;
+    } else {
+      themes = _fallbackThemes;
+    }
+
+    final initial = (themes.length > 3) ? 3 : 0;
+    _currentPage = initial.toDouble();
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 3,
+      initialPage: initial,
       viewportFraction: viewportFraction,
     );
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 3.0;
+          _currentPage = _pageController.page ?? initial.toDouble();
         });
       }
     });
@@ -378,17 +404,10 @@ class _DesignThemeSelectionScreenState extends State<DesignThemeSelectionScreen>
           Expanded(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(8),
-              child: Image.network(
-                theme['image'],
-                fit: BoxFit.cover,
-                width: double.infinity,
-                alignment: Alignment.center,
-                errorBuilder: (context, error, stackTrace) {
-                  return Container(
-                    color: Colors.grey[200],
-                    child: const Icon(Icons.broken_image, color: Colors.grey),
-                  );
-                },
+              child: AppCardImage(
+                imageUrl: theme['image'],
+                fallbackAsset: 'assets/images/design_stuff.png',
+                fallbackIcon: Icons.checkroom_outlined,
               ),
             ),
           ),

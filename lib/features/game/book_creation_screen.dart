@@ -43,7 +43,7 @@ class _BookCreationScreenState extends State<BookCreationScreen> {
       return serverCategories.firstWhereOrNull((c) {
         final cName = (c.name ?? '').toLowerCase();
         final cSlug = (c.slug ?? '').toLowerCase();
-        return cSlug.contains('story') || cName.contains('story') || (c.id == 10);
+        return cSlug.contains('story') || cName.contains('story') || (c.id == 19 || c.id == 10);
       });
     }
     return null;
@@ -66,7 +66,7 @@ class _BookCreationScreenState extends State<BookCreationScreen> {
         return {
           'id': c.id,
           'title': c.name ?? '',
-          'image': c.iconUrl ?? c.icon ?? '',
+          'image': c.iconUrl ?? c.icon ?? c.image ?? '',
           'fallbackAsset': _getFallbackAsset(c.name),
           'model': c,
         };

@@ -30,7 +30,7 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
   ];
 
   late PageController _pageController;
-  double _currentPage = 2.0;
+  double _currentPage = 0.0;
 
   @override
   void initState() {
@@ -40,14 +40,15 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
     }
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 2,
+      initialPage: 0,
       viewportFraction: viewportFraction,
     );
+    _currentPage = 0.0;
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 2.0;
+          _currentPage = _pageController.page ?? 0.0;
         });
       }
     });
@@ -165,11 +166,32 @@ class _CategorySelectionScreenState extends State<CategorySelectionScreen> {
                                         behavior: HitTestBehavior.opaque,
                                         onTap: () {
                                           if (isSelected) {
+                                            if (categories[index]['isSpecial'] == true) {
+                                              Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                  builder: (_) => PosterQuestionSelectionScreen(
+                                                    categoryTitle: categories[index]['title'] ?? 'Science',
+                                                    category: categories[index]['model'] as CategoryModel?,
+                                                  ),
+                                                ),
+                                              );
+                                              return;
+                                            }
+
+                                            final model = categories[index]['model'] as CategoryModel?;
+                                            final children = model?.children;
+                                            if (children == null || children.isEmpty) {
+                                              CustomToast.showToast(message: 'Coming Soon');
+                                              return;
+                                            }
+
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
                                                 builder: (_) => PosterQuestionSelectionScreen(
                                                   categoryTitle: categories[index]['title'] ?? 'Science',
+                                                  category: model,
                                                 ),
                                               ),
                                             );

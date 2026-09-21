@@ -111,7 +111,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
           'id': cat.id,
           'title': cat.name ?? '',
           'slug': cat.slug ?? '',
-          'image': cat.iconUrl ?? cat.icon ?? '',
+          'image': cat.iconUrl ?? cat.icon ?? cat.image ?? '',
           'fallbackAsset': _getFallbackAsset(cat.slug, cat.name),
           'category': cat,
         };

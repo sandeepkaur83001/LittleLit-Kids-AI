@@ -5,10 +5,12 @@ import 'package:little_kids_ai/features/game/subscription_screen.dart';
 
 class PosterQuestionSelectionScreen extends StatefulWidget {
   final String categoryTitle;
+  final CategoryModel? category;
 
   const PosterQuestionSelectionScreen({
     super.key,
     required this.categoryTitle,
+    this.category,
   });
 
   @override
@@ -93,13 +95,32 @@ class _PosterQuestionSelectionScreenState extends State<PosterQuestionSelectionS
   @override
   void initState() {
     super.initState();
-    _questions = _categoryQuestions[widget.categoryTitle] ?? [
-      {'title': 'What makes things grow?', 'image': 'https://picsum.photos/400/400?random=201'},
-      {'title': 'How do stars shine?', 'image': 'https://picsum.photos/400/400?random=202'},
-      {'title': 'Ask Your Question', 'isSpecial': true},
-      {'title': 'Why do we dream?', 'image': 'https://picsum.photos/400/400?random=203'},
-      {'title': 'How do magnets work?', 'image': 'https://picsum.photos/400/400?random=204'},
-    ];
+    if (widget.category != null && widget.category!.children != null && widget.category!.children!.isNotEmpty) {
+      final list = widget.category!.children!.map((c) {
+        final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'ask your question' || c.isSpecial == true);
+        return {
+          'id': c.id,
+          'title': c.name ?? '',
+          'image': c.iconUrl ?? c.icon ?? c.image ?? '',
+          'isSpecial': isSpecial,
+          'model': c,
+        };
+      }).toList();
+
+      if (!list.any((item) => item['isSpecial'] == true)) {
+        final middleIndex = (list.length / 2).floor();
+        list.insert(middleIndex, {'title': 'Ask Your Question', 'isSpecial': true});
+      }
+      _questions = list;
+    } else {
+      _questions = _categoryQuestions[widget.categoryTitle] ?? [
+        {'title': 'What makes things grow?', 'image': 'https://picsum.photos/400/400?random=201'},
+        {'title': 'How do stars shine?', 'image': 'https://picsum.photos/400/400?random=202'},
+        {'title': 'Ask Your Question', 'isSpecial': true},
+        {'title': 'Why do we dream?', 'image': 'https://picsum.photos/400/400?random=203'},
+        {'title': 'How do magnets work?', 'image': 'https://picsum.photos/400/400?random=204'},
+      ];
+    }
 
     final initial = (_questions.length / 2).floor();
     _currentPage = initial.toDouble();

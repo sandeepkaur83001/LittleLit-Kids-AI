@@ -64,7 +64,7 @@ class _TuneSelectionScreenState extends State<TuneSelectionScreen> {
       return serverCategories.firstWhereOrNull((c) {
         final cName = (c.name ?? '').toLowerCase();
         final cSlug = (c.slug ?? '').toLowerCase();
-        return cSlug.contains('song') || cName.contains('song') || (c.id == 51);
+        return cSlug.contains('song') || cName.contains('song') || (c.id == 70 || c.id == 51);
       });
     }
     return null;

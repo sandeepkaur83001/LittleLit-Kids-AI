@@ -10,12 +10,14 @@ class ColoringTheme {
   final String coverImage;
   final List<DrawingItem> drawings;
   final bool isSpecial;
+  final CategoryModel? category;
 
   ColoringTheme({
     required this.title,
     required this.coverImage,
     required this.drawings,
     this.isSpecial = false,
+    this.category,
   });
 }
 
@@ -105,7 +107,7 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
       return serverCategories.firstWhereOrNull((c) {
         final cName = (c.name ?? '').toLowerCase();
         final cSlug = (c.slug ?? '').toLowerCase();
-        return cSlug.contains('color') || cName.contains('color') || (c.id == 58);
+        return cSlug.contains('color') || cName.contains('color') || (c.id == 77 || c.id == 58);
       });
     }
     return null;
@@ -117,14 +119,18 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
     if (children != null && children.isNotEmpty) {
       return children.map((c) {
         final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        final drawings = (c.children != null && c.children!.isNotEmpty)
+            ? c.children!.map((child) => DrawingItem(
+                title: child.name ?? '',
+                image: child.iconUrl ?? child.icon ?? child.image ?? '',
+              )).toList()
+            : <DrawingItem>[];
         return ColoringTheme(
           title: c.name ?? '',
-          coverImage: c.iconUrl ?? c.icon ?? '',
+          coverImage: c.iconUrl ?? c.icon ?? c.image ?? '',
           isSpecial: isSpecial,
-          drawings: [
-            DrawingItem(title: c.name ?? 'Drawing 1', image: c.iconUrl ?? c.icon ?? ''),
-            DrawingItem(title: '${c.name ?? 'Drawing'} Adventure', image: c.iconUrl ?? c.icon ?? ''),
-          ],
+          drawings: drawings,
+          category: c,
         );
       }).toList();
     }
@@ -140,15 +146,15 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
     )..repeat();
 
     _pageController = PageController(
-      initialPage: 3,
+      initialPage: 0,
       viewportFraction: 0.185,
     );
-    _currentPage = 3.0;
+    _currentPage = 0.0;
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 3.0;
+          _currentPage = _pageController.page ?? 0.0;
         });
       }
     });
@@ -162,12 +168,19 @@ class _ColoringThemeSelectionScreenState extends State<ColoringThemeSelectionScr
   }
 
   void _onThemeSelected(ColoringTheme theme) {
+    final children = theme.category?.children;
+    if (children == null || children.isEmpty) {
+      CustomToast.showToast(message: 'Coming Soon');
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ColoringDrawingSelectionScreen(
           themeName: theme.title,
           drawings: theme.drawings,
+          category: theme.category,
         ),
       ),
     );

@@ -72,14 +72,15 @@ class _BuildProjectCategorySelectionScreenState
 
     const double viewportFraction = 0.185;
     _pageController = PageController(
-      initialPage: 2,
+      initialPage: 0,
       viewportFraction: viewportFraction,
     );
+    _currentPage = 0.0;
 
     _pageController.addListener(() {
       if (_pageController.hasClients) {
         setState(() {
-          _currentPage = _pageController.page ?? 2.0;
+          _currentPage = _pageController.page ?? 0.0;
         });
       }
     });
@@ -101,7 +102,7 @@ class _BuildProjectCategorySelectionScreenState
       return serverCategories.firstWhereOrNull((c) {
         final cName = (c.name ?? '').toLowerCase();
         final cSlug = (c.slug ?? '').toLowerCase();
-        return cSlug.contains('build') || cSlug.contains('project') || cName.contains('project') || (c.id == 76);
+        return cSlug.contains('build') || cSlug.contains('project') || cName.contains('project') || (c.id == 102 || c.id == 76);
       });
     }
     return null;
@@ -116,7 +117,7 @@ class _BuildProjectCategorySelectionScreenState
         return {
           'id': c.id,
           'title': c.name ?? '',
-          'image': c.iconUrl ?? c.icon ?? '',
+          'image': c.iconUrl ?? c.icon ?? c.image ?? '',
           'isSpecial': isSpecial,
           'model': c,
         };
@@ -126,11 +127,19 @@ class _BuildProjectCategorySelectionScreenState
   }
 
   void _onCategorySelected(Map<String, dynamic> category) {
+    final model = category['model'] as CategoryModel?;
+    final children = model?.children;
+    if (children == null || children.isEmpty) {
+      CustomToast.showToast(message: 'Coming Soon');
+      return;
+    }
+
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => BuildProjectItemSelectionScreen(
           categoryTitle: category['title'] ?? 'Robotics & Machines',
+          category: model,
         ),
       ),
     );

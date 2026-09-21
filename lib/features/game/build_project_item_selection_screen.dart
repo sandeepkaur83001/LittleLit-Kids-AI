@@ -5,10 +5,12 @@ import 'package:little_kids_ai/features/game/subscription_screen.dart';
 
 class BuildProjectItemSelectionScreen extends StatefulWidget {
   final String categoryTitle;
+  final CategoryModel? category;
 
   const BuildProjectItemSelectionScreen({
     super.key,
     required this.categoryTitle,
+    this.category,
   });
 
   @override
@@ -115,13 +117,32 @@ class _BuildProjectItemSelectionScreenState
       duration: const Duration(milliseconds: 2200),
     )..repeat();
 
-    _projects = _categoryProjects[widget.categoryTitle] ?? [
-      {'title': 'Build a Cardboard Robot', 'image': 'https://picsum.photos/400/400?random=511'},
-      {'title': 'Rubber Band Race Car', 'image': 'https://picsum.photos/400/400?random=512'},
-      {'title': 'Your Theme', 'isSpecial': true},
-      {'title': 'Windmill Electric Generator', 'image': 'https://picsum.photos/400/400?random=513'},
-      {'title': 'Hydraulic Crane Lift', 'image': 'https://picsum.photos/400/400?random=514'},
-    ];
+    if (widget.category?.children != null && widget.category!.children!.isNotEmpty) {
+      final list = widget.category!.children!.map((c) {
+        final isSpecial = (c.slug == 'your-theme' || c.name?.toLowerCase() == 'your theme' || c.isSpecial == true);
+        return {
+          'id': c.id,
+          'title': c.name ?? '',
+          'image': c.iconUrl ?? c.icon ?? c.image ?? '',
+          'isSpecial': isSpecial,
+          'model': c,
+        };
+      }).toList();
+
+      if (!list.any((item) => item['isSpecial'] == true)) {
+        final middleIndex = (list.length / 2).floor();
+        list.insert(middleIndex, {'title': 'Your Theme', 'isSpecial': true});
+      }
+      _projects = list;
+    } else {
+      _projects = _categoryProjects[widget.categoryTitle] ?? [
+        {'title': 'Build a Cardboard Robot', 'image': 'https://picsum.photos/400/400?random=511'},
+        {'title': 'Rubber Band Race Car', 'image': 'https://picsum.photos/400/400?random=512'},
+        {'title': 'Your Theme', 'isSpecial': true},
+        {'title': 'Windmill Electric Generator', 'image': 'https://picsum.photos/400/400?random=513'},
+        {'title': 'Hydraulic Crane Lift', 'image': 'https://picsum.photos/400/400?random=514'},
+      ];
+    }
 
     final initial = (_projects.length / 2).floor();
     _currentPage = initial.toDouble();
